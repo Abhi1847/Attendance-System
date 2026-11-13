@@ -36,7 +36,7 @@ export const LeaveReportsPage: React.FC = () => {
   const { success } = useToast();
 
   const [activeReportTab, setActiveReportTab] = useState<
-    'employee' | 'department' | 'monthly' | 'utilization' | 'carryForward' | 'halfDay'
+    'employee' | 'area' | 'monthly' | 'utilization' | 'carryForward' | 'halfDay'
   >('employee');
 
   // 1. Employee-wise report
@@ -45,6 +45,7 @@ export const LeaveReportsPage: React.FC = () => {
     return {
       name: emp.name,
       department: emp.department,
+      area: emp.area || 'West Coast',
       annualAllocation: bal ? bal.annualAllocation : 14,
       carryForward: bal ? bal.carryForwardAllocation : 0,
       taken: bal ? bal.currentYearTaken + bal.carryForwardTaken : 0,
@@ -55,25 +56,26 @@ export const LeaveReportsPage: React.FC = () => {
     };
   });
 
-  // 2. Department-wise report
-  const deptMap: Record<string, { totalTaken: number; count: number; totalRemaining: number }> = {};
+  // 2. Area-wise report (replaced Department-wise)
+  const areaMap: Record<string, { totalTaken: number; count: number; totalRemaining: number }> = {};
   employees.forEach(emp => {
     const bal = leaveBalances[emp.id];
-    if (!deptMap[emp.department]) {
-      deptMap[emp.department] = { totalTaken: 0, count: 0, totalRemaining: 0 };
+    const areaName = emp.area || 'West Coast';
+    if (!areaMap[areaName]) {
+      areaMap[areaName] = { totalTaken: 0, count: 0, totalRemaining: 0 };
     }
-    deptMap[emp.department].count += 1;
+    areaMap[areaName].count += 1;
     if (bal) {
-      deptMap[emp.department].totalTaken += bal.currentYearTaken + bal.carryForwardTaken;
-      deptMap[emp.department].totalRemaining +=
+      areaMap[areaName].totalTaken += bal.currentYearTaken + bal.carryForwardTaken;
+      areaMap[areaName].totalRemaining +=
         bal.annualAllocation - bal.currentYearTaken + (bal.carryForwardAllocation - bal.carryForwardTaken);
     }
   });
-  const departmentReportData = Object.keys(deptMap).map(d => ({
-    department: d,
-    averageTaken: Number((deptMap[d].totalTaken / deptMap[d].count).toFixed(1)),
-    totalTaken: deptMap[d].totalTaken,
-    totalRemaining: deptMap[d].totalRemaining
+  const areaReportData = Object.keys(areaMap).map(a => ({
+    area: a,
+    averageTaken: Number((areaMap[a].totalTaken / areaMap[a].count).toFixed(1)),
+    totalTaken: areaMap[a].totalTaken,
+    totalRemaining: areaMap[a].totalRemaining
   }));
 
   // 3. Half-Day Report
@@ -83,8 +85,8 @@ export const LeaveReportsPage: React.FC = () => {
   const handleExportCurrentReport = () => {
     if (activeReportTab === 'employee') {
       exportToCSV('Employee_Leave_Report', employeeReportData);
-    } else if (activeReportTab === 'department') {
-      exportToCSV('Department_Leave_Report', departmentReportData);
+    } else if (activeReportTab === 'area') {
+      exportToCSV('Area_wise_Leave_Report', areaReportData);
     } else if (activeReportTab === 'halfDay') {
       exportToCSV(
         'Half_Day_Leave_Report',
@@ -129,7 +131,7 @@ export const LeaveReportsPage: React.FC = () => {
       <div className="flex space-x-1.5 overflow-x-auto bg-gray-100 p-1.5 rounded-2xl text-xs font-semibold">
         {[
           { id: 'employee', label: 'Employee-wise Report' },
-          { id: 'department', label: 'Department-wise Report' },
+          { id: 'area', label: 'Area-wise Report' },
           { id: 'utilization', label: 'Leave Utilization Report' },
           { id: 'carryForward', label: 'Carry-Forward Report' },
           { id: 'halfDay', label: 'Half-Day Leave Report' }
@@ -202,18 +204,18 @@ export const LeaveReportsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Report 2: Department-wise */}
-      {activeReportTab === 'department' && (
+      {/* Report 2: Area-wise */}
+      {activeReportTab === 'area' && (
         <div className="space-y-6">
           <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs">
-            <h3 className="text-base font-bold text-gray-900 mb-1">Departmental Leave Utilization</h3>
-            <p className="text-xs text-gray-400 mb-4">Total Leave Days Taken by Department</p>
+            <h3 className="text-base font-bold text-gray-900 mb-1">Area-wise Leave Utilization</h3>
+            <p className="text-xs text-gray-400 mb-4">Total Leave Days Taken by Geographic/Operational Area</p>
 
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={departmentReportData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+                <BarChart data={areaReportData} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                  <XAxis dataKey="department" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                  <XAxis dataKey="area" stroke="#94A3B8" fontSize={11} tickLine={false} />
                   <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
                   <Tooltip contentStyle={{ backgroundColor: '#0F172A', color: '#fff', borderRadius: '12px', border: 'none' }} />
                   <Bar dataKey="totalTaken" name="Total Days Taken" fill="#6366F1" radius={[6, 6, 0, 0]} />

@@ -25,11 +25,9 @@ import { LeaveRequest } from '../types';
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
   { label: 'Employees', icon: Users, path: '/admin/employees' },
-  { label: 'Attendance', icon: CalendarCheck, path: '/admin/attendance' },
   { label: 'Leave Requests', icon: ClipboardList, path: '/admin/leave-requests' },
   { label: 'Leave History', icon: History, path: '/admin/leave-history' },
   { label: 'Leave Reports', icon: BarChart3, path: '/admin/reports' },
-  { label: 'Documents', icon: FileText, path: '/admin/documents' },
   { label: 'Settings', icon: Settings, path: '/admin/settings' },
 ];
 
@@ -259,9 +257,9 @@ export const AdminLayout: React.FC = () => {
         </header>
 
         {/* Dynamic Page Content */}
-        <main className="p-4 sm:p-8 flex-1">
-          <Outlet />
-        </main>
+          <main className="p-4 sm:p-8 flex-1 flex flex-col">
+            <Outlet />
+          </main>
       </div>
     </div>
   );

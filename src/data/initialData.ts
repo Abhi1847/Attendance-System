@@ -29,7 +29,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 14.5,
     attendancePercentage: 96.5,
     address: '742 Evergreen Terrace, Springfield, OR',
-    emergencyContact: 'Mary Smith (+1 555-987-6543)'
+    emergencyContact: 'Mary Smith (+1 555-987-6543)',
+    llcName: 'TechFlow Global LLC',
+    area: 'North Region',
+    jobLocation: 'Springfield'
   },
   {
     id: 'EMP002',
@@ -47,7 +50,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 15,
     attendancePercentage: 98.2,
     address: '10880 Wilshire Blvd, Los Angeles, CA',
-    emergencyContact: 'David Johnson (+1 555-876-5432)'
+    emergencyContact: 'David Johnson (+1 555-876-5432)',
+    llcName: 'Acme Solutions LLC',
+    area: 'West Coast',
+    jobLocation: 'Los Angeles'
   },
   {
     id: 'EMP003',
@@ -65,7 +71,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 13,
     attendancePercentage: 94.0,
     address: '350 5th Ave, New York, NY',
-    emergencyContact: 'Laura Brown (+1 555-765-4321)'
+    emergencyContact: 'Laura Brown (+1 555-765-4321)',
+    llcName: 'Metro Systems LLC',
+    area: 'East Coast',
+    jobLocation: 'New York'
   },
   {
     id: 'EMP004',
@@ -83,7 +92,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 15,
     attendancePercentage: 99.1,
     address: '400 Pine St, Seattle, WA',
-    emergencyContact: 'Robert Davis (+1 555-654-3210)'
+    emergencyContact: 'Robert Davis (+1 555-654-3210)',
+    llcName: 'Pacific HR LLC',
+    area: 'Northwest',
+    jobLocation: 'Seattle'
   },
   {
     id: 'EMP005',
@@ -101,7 +113,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 9.5,
     attendancePercentage: 95.8,
     address: '100 Main St, Austin, TX',
-    emergencyContact: 'Karen Wilson (+1 555-543-2109)'
+    emergencyContact: 'Karen Wilson (+1 555-543-2109)',
+    llcName: 'Apex Growth LLC',
+    area: 'South Region',
+    jobLocation: 'Austin'
   },
   {
     id: 'EMP006',
@@ -119,7 +134,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 15,
     attendancePercentage: 97.4,
     address: '233 S Wacker Dr, Chicago, IL',
-    emergencyContact: 'Susan Miller (+1 555-432-1098)'
+    emergencyContact: 'Susan Miller (+1 555-432-1098)',
+    llcName: 'Windy City Fin LLC',
+    area: 'Midwest',
+    jobLocation: 'Chicago'
   },
   {
     id: 'EMP007',
@@ -137,7 +155,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 11,
     attendancePercentage: 93.5,
     address: '600 Congress Ave, Austin, TX',
-    emergencyContact: 'Mark Taylor (+1 555-321-0987)'
+    emergencyContact: 'Mark Taylor (+1 555-321-0987)',
+    llcName: 'Apex Growth LLC',
+    area: 'South Region',
+    jobLocation: 'Austin'
   },
   {
     id: 'EMP008',
@@ -155,7 +176,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 8,
     attendancePercentage: 91.2,
     address: '500 Howard St, San Francisco, CA',
-    emergencyContact: 'Emma Wilson (+1 555-210-9876)'
+    emergencyContact: 'Emma Wilson (+1 555-210-9876)',
+    llcName: 'TechFlow Global LLC',
+    area: 'West Coast',
+    jobLocation: 'San Francisco'
   },
   {
     id: 'EMP009',
@@ -173,7 +197,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 12.5,
     attendancePercentage: 98.9,
     address: '1200 Brickell Ave, Miami, FL',
-    emergencyContact: 'Carlos Martinez (+1 555-109-8765)'
+    emergencyContact: 'Carlos Martinez (+1 555-109-8765)',
+    llcName: 'Coastline Creative LLC',
+    area: 'Southeast',
+    jobLocation: 'Miami'
   },
   {
     id: 'EMP010',
@@ -191,7 +218,10 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     leaveRemaining: 15,
     attendancePercentage: 96.0,
     address: '800 Boylston St, Boston, MA',
-    emergencyContact: 'Lisa Anderson (+1 555-098-7654)'
+    emergencyContact: 'Lisa Anderson (+1 555-098-7654)',
+    llcName: 'Metro Systems LLC',
+    area: 'East Coast',
+    jobLocation: 'Boston'
   }
 ];
 

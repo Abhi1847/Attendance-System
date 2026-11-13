@@ -178,6 +178,7 @@ export const ApplyLeavePage: React.FC = () => {
                 className="w-full p-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-none focus:border-blue-600 bg-gray-50/50"
               >
                 <option value="Annual Leave">Annual Leave</option>
+                <option value="Vacation">Vacation</option>
                 <option value="Casual Leave">Casual Leave</option>
                 <option value="Sick Leave">Sick Leave</option>
                 <option value="Personal Leave">Personal Leave</option>

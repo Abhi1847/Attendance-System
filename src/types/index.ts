@@ -11,7 +11,7 @@ export interface User {
   designation?: string;
 }
 
-export type LeaveType = 'Annual Leave' | 'Casual Leave' | 'Sick Leave' | 'Personal Leave' | 'Unpaid Leave';
+export type LeaveType = 'Annual Leave' | 'Casual Leave' | 'Sick Leave' | 'Personal Leave' | 'Vacation' | 'Unpaid Leave';
 
 export type LeaveDurationType = 'Full Day' | 'Half Day';
 
@@ -89,6 +89,9 @@ export interface Employee {
   attendancePercentage: number;
   address?: string;
   emergencyContact?: string;
+  llcName?: string;
+  jobLocation?: string;
+  area?: string;
 }
 
 export interface DocumentItem {

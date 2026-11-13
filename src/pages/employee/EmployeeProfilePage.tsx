@@ -27,7 +27,8 @@ export const EmployeeProfilePage: React.FC = () => {
   const summary = getLeaveSummary(balance);
 
   const [phone, setPhone] = useState(employeeData?.phone || '+1 (555) 345-6789');
-  const [address, setAddress] = useState(employeeData?.address || '10880 Wilshire Blvd, Los Angeles, CA');
+  const [llcName, setLlcName] = useState(employeeData?.llcName || 'Acme Solutions LLC');
+  const [jobLocation, setJobLocation] = useState(employeeData?.jobLocation || 'California, US');
   const [emergency, setEmergency] = useState(employeeData?.emergencyContact || 'David Johnson (+1 555-876-5432)');
 
   const handleSave = (e: React.FormEvent) => {
@@ -59,14 +60,10 @@ export const EmployeeProfilePage: React.FC = () => {
             </span>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
             <div>
               <span className="text-gray-400 block font-medium">Employee ID</span>
               <span className="font-mono font-bold text-gray-900">{employeeId}</span>
-            </div>
-            <div>
-              <span className="text-gray-400 block font-medium">Joining Date</span>
-              <span className="font-bold text-gray-900">{employeeData?.joiningDate || '2022-08-01'}</span>
             </div>
             <div>
               <span className="text-gray-400 block font-medium">Annual Quota</span>
@@ -82,11 +79,11 @@ export const EmployeeProfilePage: React.FC = () => {
 
       {/* Profile Edit Form */}
       <form onSubmit={handleSave} className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
-        <h3 className="text-base font-bold text-gray-900">Personal & Emergency Contact Details</h3>
+        <h3 className="text-base font-bold text-gray-900">Personal & Employment Details</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-1">Corporate Email</label>
+            <label className="text-xs font-semibold text-gray-700 block mb-1">Email</label>
             <input
               type="email"
               disabled
@@ -105,14 +102,33 @@ export const EmployeeProfilePage: React.FC = () => {
             />
           </div>
 
-          <div className="sm:col-span-2">
-            <label className="text-xs font-semibold text-gray-700 block mb-1">Residential Address</label>
+          <div>
+            <label className="text-xs font-semibold text-gray-700 block mb-1">LLC Name</label>
             <input
               type="text"
-              value={address}
-              onChange={e => setAddress(e.target.value)}
+              value={llcName}
+              onChange={e => setLlcName(e.target.value)}
+              placeholder="e.g. Acme Solutions LLC"
               className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-blue-600"
             />
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-xs font-semibold text-gray-700">Job Location</label>
+              <span className="text-[10px] text-gray-400 font-mono">
+                {jobLocation.length}/15 chars
+              </span>
+            </div>
+            <input
+              type="text"
+              maxLength={15}
+              value={jobLocation}
+              onChange={e => setJobLocation(e.target.value.slice(0, 15))}
+              placeholder="Max 15 letters"
+              className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-blue-600"
+            />
+            <p className="text-[10px] text-gray-400 mt-0.5">Accepts up to 15 characters only.</p>
           </div>
 
           <div className="sm:col-span-2">

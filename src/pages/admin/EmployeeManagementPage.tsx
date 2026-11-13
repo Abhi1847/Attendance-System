@@ -45,9 +45,8 @@ export const EmployeeManagementPage: React.FC = () => {
       ID: e.id,
       Name: e.name,
       Email: e.email,
-      Department: e.department,
-      Designation: e.designation,
-      JoiningDate: e.joiningDate,
+      LLCName: e.llcName || 'Acme Solutions LLC',
+      JobLocation: e.jobLocation || 'California, US',
       AnnualLeave: e.annualLeave,
       CarryForwardLeave: e.carryForwardLeave,
       LeaveTaken: e.leaveTaken,
@@ -122,8 +121,7 @@ export const EmployeeManagementPage: React.FC = () => {
             <thead className="bg-gray-50/70 text-gray-600 font-semibold uppercase tracking-wider text-[11px] border-b border-gray-100">
               <tr>
                 <th className="px-5 py-3.5">Employee</th>
-                <th className="px-5 py-3.5">Department</th>
-                <th className="px-5 py-3.5">Designation</th>
+                <th className="px-5 py-3.5">LLC Name</th>
                 <th className="px-5 py-3.5 text-center">Annual Leave</th>
                 <th className="px-5 py-3.5 text-center">Taken</th>
                 <th className="px-5 py-3.5 text-center">Remaining</th>
@@ -149,8 +147,10 @@ export const EmployeeManagementPage: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4 font-medium">{emp.department}</td>
-                  <td className="px-5 py-4 text-gray-500">{emp.designation}</td>
+                  <td className="px-5 py-4">
+                    <span className="font-semibold text-gray-900 block">{emp.llcName || 'Acme Solutions LLC'}</span>
+                    <span className="text-[10px] text-gray-400 block">{emp.jobLocation || 'HQ'}</span>
+                  </td>
                   <td className="px-5 py-4 text-center font-semibold text-gray-800">{emp.annualLeave}d</td>
                   <td className="px-5 py-4 text-center font-bold text-blue-700">{emp.leaveTaken}d</td>
                   <td className="px-5 py-4 text-center font-bold text-emerald-600">{emp.leaveRemaining}d</td>
