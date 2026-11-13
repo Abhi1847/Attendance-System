@@ -1,0 +1,445 @@
+import { Employee, LeaveBalance, LeaveRequest, AttendanceRecord, DocumentItem, SystemSettings, ActivityLog } from '../types';
+
+export const INITIAL_SETTINGS: SystemSettings = {
+  annualLeaveAllocation: 14,
+  weeklyOffDays: [0], // 0 = Sunday
+  carryForwardEnabled: true,
+  carryForwardExpiry: 'None',
+  halfDayEnabled: true,
+  requireLeaveReason: true,
+  autoApproveSickLeaveUnder2Days: false,
+  allowPastDateRequests: false,
+  workingDays: [1, 2, 3, 4, 5, 6], // Mon-Sat
+};
+
+export const INITIAL_EMPLOYEES: Employee[] = [
+  {
+    id: 'EMP001',
+    name: 'John Smith',
+    email: 'john.smith@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
+    department: 'Engineering',
+    designation: 'Senior Frontend Engineer',
+    joiningDate: '2023-03-15',
+    phone: '+1 (555) 234-5678',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 3,
+    leaveTaken: 2.5,
+    leaveRemaining: 14.5,
+    attendancePercentage: 96.5,
+    address: '742 Evergreen Terrace, Springfield, OR',
+    emergencyContact: 'Mary Smith (+1 555-987-6543)'
+  },
+  {
+    id: 'EMP002',
+    name: 'Sarah Johnson',
+    email: 'employee@demo.com', // Demo employee login
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+    department: 'Product Design',
+    designation: 'Lead UI/UX Designer',
+    joiningDate: '2022-08-01',
+    phone: '+1 (555) 345-6789',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 4,
+    leaveTaken: 3,
+    leaveRemaining: 15,
+    attendancePercentage: 98.2,
+    address: '10880 Wilshire Blvd, Los Angeles, CA',
+    emergencyContact: 'David Johnson (+1 555-876-5432)'
+  },
+  {
+    id: 'EMP003',
+    name: 'Michael Brown',
+    email: 'michael.brown@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    department: 'Engineering',
+    designation: 'Backend Architect',
+    joiningDate: '2021-11-10',
+    phone: '+1 (555) 456-7890',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 5,
+    leaveTaken: 6,
+    leaveRemaining: 13,
+    attendancePercentage: 94.0,
+    address: '350 5th Ave, New York, NY',
+    emergencyContact: 'Laura Brown (+1 555-765-4321)'
+  },
+  {
+    id: 'EMP004',
+    name: 'Emily Davis',
+    email: 'emily.davis@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    department: 'Human Resources',
+    designation: 'HR Business Partner',
+    joiningDate: '2023-01-20',
+    phone: '+1 (555) 567-8901',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 2,
+    leaveTaken: 1,
+    leaveRemaining: 15,
+    attendancePercentage: 99.1,
+    address: '400 Pine St, Seattle, WA',
+    emergencyContact: 'Robert Davis (+1 555-654-3210)'
+  },
+  {
+    id: 'EMP005',
+    name: 'Alex Wilson',
+    email: 'alex.wilson@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    department: 'Marketing',
+    designation: 'Growth Marketing Manager',
+    joiningDate: '2023-06-12',
+    phone: '+1 (555) 678-9012',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 0,
+    leaveTaken: 4.5,
+    leaveRemaining: 9.5,
+    attendancePercentage: 95.8,
+    address: '100 Main St, Austin, TX',
+    emergencyContact: 'Karen Wilson (+1 555-543-2109)'
+  },
+  {
+    id: 'EMP006',
+    name: 'David Miller',
+    email: 'david.miller@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80',
+    department: 'Finance',
+    designation: 'Financial Analyst',
+    joiningDate: '2022-04-18',
+    phone: '+1 (555) 789-0123',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 3,
+    leaveTaken: 2,
+    leaveRemaining: 15,
+    attendancePercentage: 97.4,
+    address: '233 S Wacker Dr, Chicago, IL',
+    emergencyContact: 'Susan Miller (+1 555-432-1098)'
+  },
+  {
+    id: 'EMP007',
+    name: 'Jessica Taylor',
+    email: 'jessica.taylor@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+    department: 'Customer Success',
+    designation: 'CS Team Lead',
+    joiningDate: '2022-09-05',
+    phone: '+1 (555) 890-1234',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 2,
+    leaveTaken: 5,
+    leaveRemaining: 11,
+    attendancePercentage: 93.5,
+    address: '600 Congress Ave, Austin, TX',
+    emergencyContact: 'Mark Taylor (+1 555-321-0987)'
+  },
+  {
+    id: 'EMP008',
+    name: 'Daniel Wilson',
+    email: 'daniel.wilson@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+    department: 'Engineering',
+    designation: 'DevOps Specialist',
+    joiningDate: '2023-05-10',
+    phone: '+1 (555) 901-2345',
+    status: 'On Leave',
+    annualLeave: 14,
+    carryForwardLeave: 1,
+    leaveTaken: 7,
+    leaveRemaining: 8,
+    attendancePercentage: 91.2,
+    address: '500 Howard St, San Francisco, CA',
+    emergencyContact: 'Emma Wilson (+1 555-210-9876)'
+  },
+  {
+    id: 'EMP009',
+    name: 'Sophia Martinez',
+    email: 'sophia.martinez@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    department: 'Product Design',
+    designation: 'Visual Designer',
+    joiningDate: '2023-09-01',
+    phone: '+1 (555) 012-3456',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 0,
+    leaveTaken: 1.5,
+    leaveRemaining: 12.5,
+    attendancePercentage: 98.9,
+    address: '1200 Brickell Ave, Miami, FL',
+    emergencyContact: 'Carlos Martinez (+1 555-109-8765)'
+  },
+  {
+    id: 'EMP010',
+    name: 'Ryan Anderson',
+    email: 'ryan.anderson@demo.com',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    department: 'Sales',
+    designation: 'Enterprise Account Exec',
+    joiningDate: '2022-02-14',
+    phone: '+1 (555) 123-4567',
+    status: 'Active',
+    annualLeave: 14,
+    carryForwardLeave: 4,
+    leaveTaken: 3,
+    leaveRemaining: 15,
+    attendancePercentage: 96.0,
+    address: '800 Boylston St, Boston, MA',
+    emergencyContact: 'Lisa Anderson (+1 555-098-7654)'
+  }
+];
+
+export const INITIAL_LEAVE_BALANCES: Record<string, LeaveBalance> = {
+  EMP001: { employeeId: 'EMP001', annualAllocation: 14, currentYearTaken: 2.5, carryForwardAllocation: 3, carryForwardTaken: 0 },
+  EMP002: { employeeId: 'EMP002', annualAllocation: 14, currentYearTaken: 3.0, carryForwardAllocation: 4, carryForwardTaken: 0 },
+  EMP003: { employeeId: 'EMP003', annualAllocation: 14, currentYearTaken: 6.0, carryForwardAllocation: 5, carryForwardTaken: 0 },
+  EMP004: { employeeId: 'EMP004', annualAllocation: 14, currentYearTaken: 1.0, carryForwardAllocation: 2, carryForwardTaken: 0 },
+  EMP005: { employeeId: 'EMP005', annualAllocation: 14, currentYearTaken: 4.5, carryForwardAllocation: 0, carryForwardTaken: 0 },
+  EMP006: { employeeId: 'EMP006', annualAllocation: 14, currentYearTaken: 2.0, carryForwardAllocation: 3, carryForwardTaken: 0 },
+  EMP007: { employeeId: 'EMP007', annualAllocation: 14, currentYearTaken: 5.0, carryForwardAllocation: 2, carryForwardTaken: 0 },
+  EMP008: { employeeId: 'EMP008', annualAllocation: 14, currentYearTaken: 7.0, carryForwardAllocation: 1, carryForwardTaken: 0 },
+  EMP009: { employeeId: 'EMP009', annualAllocation: 14, currentYearTaken: 1.5, carryForwardAllocation: 0, carryForwardTaken: 0 },
+  EMP010: { employeeId: 'EMP010', annualAllocation: 14, currentYearTaken: 3.0, carryForwardAllocation: 4, carryForwardTaken: 0 }
+};
+
+export const INITIAL_LEAVE_REQUESTS: LeaveRequest[] = [
+  {
+    id: 'LR-1001',
+    employeeId: 'EMP002', // Sarah Johnson
+    employeeName: 'Sarah Johnson',
+    department: 'Product Design',
+    leaveType: 'Annual Leave',
+    startDate: '2026-11-20',
+    endDate: '2026-11-23', // Fri to Mon (Fri=1, Sat=1, Sun=0 off, Mon=1) => 3 deductible, 4 calendar
+    durationType: 'Full Day',
+    calendarDays: 4,
+    deductibleDays: 3,
+    weeklyOffDaysExcluded: 1,
+    reason: 'Family wedding out of town',
+    status: 'Pending',
+    requestDate: '2026-11-12',
+    attachmentName: 'wedding_invitation.pdf',
+    attachmentSize: '1.2 MB'
+  },
+  {
+    id: 'LR-1002',
+    employeeId: 'EMP001', // John Smith
+    employeeName: 'John Smith',
+    department: 'Engineering',
+    leaveType: 'Casual Leave',
+    startDate: '2026-11-18',
+    endDate: '2026-11-18',
+    durationType: 'Half Day',
+    halfDaySession: 'Morning',
+    calendarDays: 1,
+    deductibleDays: 0.5,
+    weeklyOffDaysExcluded: 0,
+    reason: 'Personal medical checkup and dental visit',
+    status: 'Pending',
+    requestDate: '2026-11-13'
+  },
+  {
+    id: 'LR-1003',
+    employeeId: 'EMP003', // Michael Brown
+    employeeName: 'Michael Brown',
+    department: 'Engineering',
+    leaveType: 'Sick Leave',
+    startDate: '2026-11-05',
+    endDate: '2026-11-06',
+    durationType: 'Full Day',
+    calendarDays: 2,
+    deductibleDays: 2,
+    weeklyOffDaysExcluded: 0,
+    reason: 'Severe viral fever and physician recommended rest',
+    status: 'Approved',
+    requestDate: '2026-11-04',
+    reviewedBy: 'Admin (System)',
+    reviewDate: '2026-11-04',
+    attachmentName: 'doctor_note.pdf',
+    attachmentSize: '450 KB'
+  },
+  {
+    id: 'LR-1004',
+    employeeId: 'EMP005', // Alex Wilson
+    employeeName: 'Alex Wilson',
+    department: 'Marketing',
+    leaveType: 'Personal Leave',
+    startDate: '2026-10-15',
+    endDate: '2026-10-16',
+    durationType: 'Full Day',
+    calendarDays: 2,
+    deductibleDays: 2,
+    weeklyOffDaysExcluded: 0,
+    reason: 'Relocating to a new apartment',
+    status: 'Approved',
+    requestDate: '2026-10-10',
+    reviewedBy: 'Admin (System)',
+    reviewDate: '2026-10-11'
+  },
+  {
+    id: 'LR-1005',
+    employeeId: 'EMP007', // Jessica Taylor
+    employeeName: 'Jessica Taylor',
+    department: 'Customer Success',
+    leaveType: 'Annual Leave',
+    startDate: '2026-12-01',
+    endDate: '2026-12-05',
+    durationType: 'Full Day',
+    calendarDays: 5,
+    deductibleDays: 5,
+    weeklyOffDaysExcluded: 0,
+    reason: 'Year-end vacation trip',
+    status: 'Pending',
+    requestDate: '2026-11-10'
+  },
+  {
+    id: 'LR-1006',
+    employeeId: 'EMP002', // Sarah Johnson
+    employeeName: 'Sarah Johnson',
+    department: 'Product Design',
+    leaveType: 'Casual Leave',
+    startDate: '2026-10-02',
+    endDate: '2026-10-02',
+    durationType: 'Half Day',
+    halfDaySession: 'Afternoon',
+    calendarDays: 1,
+    deductibleDays: 0.5,
+    weeklyOffDaysExcluded: 0,
+    reason: 'Bank urgent documentation work',
+    status: 'Approved',
+    requestDate: '2026-10-01',
+    reviewedBy: 'Admin (System)',
+    reviewDate: '2026-10-01'
+  },
+  {
+    id: 'LR-1007',
+    employeeId: 'EMP004', // Emily Davis
+    employeeName: 'Emily Davis',
+    department: 'Human Resources',
+    leaveType: 'Annual Leave',
+    startDate: '2026-09-10',
+    endDate: '2026-09-14',
+    durationType: 'Full Day',
+    calendarDays: 5,
+    deductibleDays: 4, // Sunday in between
+    weeklyOffDaysExcluded: 1,
+    reason: 'Family reunion',
+    status: 'Rejected',
+    requestDate: '2026-09-01',
+    reviewedBy: 'Admin (System)',
+    reviewDate: '2026-09-02',
+    rejectionReason: 'Critical quarterly review scheduled during this period.'
+  }
+];
+
+export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
+  { id: 'ATT-001', employeeId: 'EMP001', employeeName: 'John Smith', department: 'Engineering', date: '2026-11-13', checkIn: '09:05 AM', checkOut: '06:10 PM', workingHours: '9h 05m', status: 'Present' },
+  { id: 'ATT-002', employeeId: 'EMP002', employeeName: 'Sarah Johnson', department: 'Product Design', date: '2026-11-13', checkIn: '09:00 AM', checkOut: '06:00 PM', workingHours: '9h 00m', status: 'Present' },
+  { id: 'ATT-003', employeeId: 'EMP003', employeeName: 'Michael Brown', department: 'Engineering', date: '2026-11-13', checkIn: '09:45 AM', checkOut: '06:45 PM', workingHours: '9h 00m', status: 'Late' },
+  { id: 'ATT-004', employeeId: 'EMP004', employeeName: 'Emily Davis', department: 'Human Resources', date: '2026-11-13', checkIn: '08:55 AM', checkOut: '05:55 PM', workingHours: '9h 00m', status: 'Present' },
+  { id: 'ATT-005', employeeId: 'EMP005', employeeName: 'Alex Wilson', department: 'Marketing', date: '2026-11-13', checkIn: '09:15 AM', checkOut: '06:15 PM', workingHours: '9h 00m', status: 'Present' },
+  { id: 'ATT-006', employeeId: 'EMP006', employeeName: 'David Miller', department: 'Finance', date: '2026-11-13', checkIn: '09:00 AM', checkOut: '01:30 PM', workingHours: '4h 30m', status: 'Half Day', notes: 'Afternoon half day leave' },
+  { id: 'ATT-007', employeeId: 'EMP007', employeeName: 'Jessica Taylor', department: 'Customer Success', date: '2026-11-13', checkIn: '09:02 AM', checkOut: '06:02 PM', workingHours: '9h 00m', status: 'Present' },
+  { id: 'ATT-008', employeeId: 'EMP008', employeeName: 'Daniel Wilson', department: 'Engineering', date: '2026-11-13', status: 'On Leave', notes: 'Approved Sick Leave' },
+  { id: 'ATT-009', employeeId: 'EMP009', employeeName: 'Sophia Martinez', department: 'Product Design', date: '2026-11-13', checkIn: '09:10 AM', checkOut: '06:10 PM', workingHours: '9h 00m', status: 'Present' },
+  { id: 'ATT-010', employeeId: 'EMP010', employeeName: 'Ryan Anderson', department: 'Sales', date: '2026-11-13', status: 'Absent', notes: 'Unnotified absence' },
+
+  // Previous day sample
+  { id: 'ATT-011', employeeId: 'EMP002', employeeName: 'Sarah Johnson', department: 'Product Design', date: '2026-11-12', checkIn: '08:58 AM', checkOut: '06:05 PM', workingHours: '9h 07m', status: 'Present' },
+  { id: 'ATT-012', employeeId: 'EMP002', employeeName: 'Sarah Johnson', department: 'Product Design', date: '2026-11-11', checkIn: '09:02 AM', checkOut: '06:00 PM', workingHours: '8h 58m', status: 'Present' },
+  { id: 'ATT-013', employeeId: 'EMP002', employeeName: 'Sarah Johnson', department: 'Product Design', date: '2026-11-10', checkIn: '09:35 AM', checkOut: '06:30 PM', workingHours: '8h 55m', status: 'Late' },
+  { id: 'ATT-014', employeeId: 'EMP002', employeeName: 'Sarah Johnson', department: 'Product Design', date: '2026-11-09', checkIn: '09:00 AM', checkOut: '06:00 PM', workingHours: '9h 00m', status: 'Present' }
+];
+
+export const INITIAL_DOCUMENTS: DocumentItem[] = [
+  {
+    id: 'DOC-001',
+    employeeId: 'EMP002',
+    employeeName: 'Sarah Johnson',
+    title: 'Employment Contract - 2022',
+    documentType: 'Contract',
+    fileName: 'sarah_johnson_offer_signed.pdf',
+    fileSize: '2.4 MB',
+    fileType: 'application/pdf',
+    uploadDate: '2022-08-01'
+  },
+  {
+    id: 'DOC-002',
+    employeeId: 'EMP002',
+    employeeName: 'Sarah Johnson',
+    title: 'National Identity Proof',
+    documentType: 'ID Proof',
+    fileName: 'passport_scan.pdf',
+    fileSize: '1.1 MB',
+    fileType: 'application/pdf',
+    uploadDate: '2022-08-02'
+  },
+  {
+    id: 'DOC-003',
+    employeeId: 'EMP003',
+    employeeName: 'Michael Brown',
+    title: 'Medical Clearance Certificate',
+    documentType: 'Medical Certificate',
+    fileName: 'dr_clearance_nov.pdf',
+    fileSize: '680 KB',
+    fileType: 'application/pdf',
+    uploadDate: '2026-11-04'
+  },
+  {
+    id: 'DOC-004',
+    employeeId: 'EMP001',
+    employeeName: 'John Smith',
+    title: 'W-4 Tax Form',
+    documentType: 'Tax Document',
+    fileName: 'john_w4_2026.pdf',
+    fileSize: '890 KB',
+    fileType: 'application/pdf',
+    uploadDate: '2026-01-15'
+  }
+];
+
+export const INITIAL_ACTIVITY_LOGS: ActivityLog[] = [
+  {
+    id: 'ACT-001',
+    timestamp: '2026-11-13 14:30',
+    userName: 'John Smith',
+    userRole: 'employee',
+    action: 'Submitted Leave Request',
+    details: 'Casual Half-Day leave for 2026-11-18',
+    type: 'leave'
+  },
+  {
+    id: 'ACT-002',
+    timestamp: '2026-11-12 11:15',
+    userName: 'Sarah Johnson',
+    userRole: 'employee',
+    action: 'Submitted Leave Request',
+    details: 'Annual Leave from 2026-11-20 to 2026-11-23 (3 deductible days)',
+    type: 'leave'
+  },
+  {
+    id: 'ACT-003',
+    timestamp: '2026-11-04 16:45',
+    userName: 'System Admin',
+    userRole: 'admin',
+    action: 'Approved Leave Request',
+    details: 'Approved Sick Leave for Michael Brown (2 days)',
+    type: 'leave'
+  },
+  {
+    id: 'ACT-004',
+    timestamp: '2026-11-02 09:10',
+    userName: 'System Admin',
+    userRole: 'admin',
+    action: 'Updated System Settings',
+    details: 'Verified Annual Leave Allocation at 14 days',
+    type: 'system'
+  }
+];
+
