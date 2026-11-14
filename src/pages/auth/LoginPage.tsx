@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../context/AppDataContext';
 import { useToast } from '../../context/ToastContext';
-import { Sparkles, Shield, User, Lock, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { AuthService } from '../../services/mock/storageService';
+import { Sparkles, Shield, User, Lock, Mail, ArrowRight, CheckCircle2, KeyRound, AlertCircle } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('admin@demo.com');
@@ -11,8 +13,13 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
+  const { requestPasswordChange, employees } = useAppData();
   const { success, error } = useToast();
   const navigate = useNavigate();
+
+  const [forgotModalOpen, setForgotModalOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotReason, setForgotReason] = useState('');
 
   const handleSelectRole = (selectedRole: 'admin' | 'employee') => {
     setRole(selectedRole);
@@ -25,27 +32,55 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      error('Please enter your employee email address.');
+      return;
+    }
+    const matched = employees.find(emp => emp.email.toLowerCase() === forgotEmail.toLowerCase());
+    const empId = matched ? matched.id : 'EMP-UNKNOWN';
+    const empName = matched ? matched.name : forgotEmail.split('@')[0];
+
+    requestPasswordChange(empId, empName, forgotEmail, forgotReason);
+    success('Password change request submitted! Administrator will review and approve your request.');
+    setForgotModalOpen(false);
+    setForgotReason('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      const registeredCreds = AuthService.getRegisteredCredentials();
+      const userEmailKey = email.trim().toLowerCase();
+
       // Validate credentials
       if (role === 'admin') {
-        if (email !== 'admin@demo.com' || password !== 'admin123') {
-          error('Invalid Admin credentials. Use admin@demo.com / admin123');
+        const expected = registeredCreds['admin@demo.com'] || 'admin123';
+        if (userEmailKey !== 'admin@demo.com' || password !== expected) {
+          error(`Invalid Admin credentials. Use admin@demo.com / ${expected}`);
           setLoading(false);
           return;
         }
       } else {
-        if (email !== 'employee@demo.com' || password !== 'employee123') {
-          error('Invalid Employee credentials. Use employee@demo.com / employee123');
+        const expected = registeredCreds[userEmailKey];
+        if (!expected) {
+          // If not in registered map, test against fallback employee@demo.com / employee123
+          if (userEmailKey !== 'employee@demo.com' || password !== 'employee123') {
+            error('Invalid Employee credentials. If you were invited, please complete registration first.');
+            setLoading(false);
+            return;
+          }
+        } else if (password !== expected) {
+          error('Incorrect password. If you forgot your password, submit a Password Change Request to admin.');
           setLoading(false);
           return;
         }
       }
 
-      await login(email, role);
+      await login(email, role, password);
       success(`Welcome back! Signed in as ${role === 'admin' ? 'Administrator' : 'Employee'}.`);
 
       if (role === 'admin') {
@@ -79,11 +114,10 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSelectRole('admin')}
-              className={`flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                role === 'admin'
+              className={`flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-bold transition-all ${role === 'admin'
                   ? 'bg-white text-blue-700 shadow-sm'
                   : 'text-gray-500 hover:text-gray-900'
-              }`}
+                }`}
             >
               <Shield className="w-4 h-4" />
               <span>Admin Portal</span>
@@ -91,11 +125,10 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSelectRole('employee')}
-              className={`flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                role === 'employee'
+              className={`flex items-center justify-center space-x-2 py-2.5 rounded-xl text-xs font-bold transition-all ${role === 'employee'
                   ? 'bg-white text-blue-700 shadow-sm'
                   : 'text-gray-500 hover:text-gray-900'
-              }`}
+                }`}
             >
               <User className="w-4 h-4" />
               <span>Employee Portal</span>
@@ -119,7 +152,21 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-1.5">Password</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-gray-700 block">Password</label>
+                {role === 'employee' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotEmail(email);
+                      setForgotModalOpen(true);
+                    }}
+                    className="text-[11px] text-blue-600 hover:underline font-semibold"
+                  >
+                    Request Password Change
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -178,6 +225,79 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Employee Password Change Request Modal */}
+      {forgotModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div
+              className="fixed inset-0 bg-gray-950/60 backdrop-blur-xs transition-opacity"
+              onClick={() => setForgotModalOpen(false)}
+            />
+            <div className="relative w-full max-w-md rounded-2xl bg-white text-left shadow-2xl transition-all border border-gray-100 p-6 z-10 animate-fade-in">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">Request Password Reset</h3>
+                  <p className="text-xs text-gray-500">
+                    Employees cannot change passwords directly. Submit a request to the administrator for review and approval.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleForgotSubmit} className="space-y-3.5">
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">Your Registered Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={forgotEmail}
+                    onChange={e => setForgotEmail(e.target.value)}
+                    placeholder="employee@demo.com"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">Reason for Change (Optional)</label>
+                  <textarea
+                    rows={2}
+                    value={forgotReason}
+                    onChange={e => setForgotReason(e.target.value)}
+                    placeholder="e.g. Forgot existing credentials, security policy..."
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-blue-600 resize-none"
+                  />
+                </div>
+
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Your company administrator will review and generate a temporary password for your account in the Admin Panel.
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setForgotModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-xs font-semibold hover:bg-gray-200 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
+                  >
+                    Submit Request
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

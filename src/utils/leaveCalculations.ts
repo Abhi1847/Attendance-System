@@ -28,12 +28,11 @@ export function formatLocalDate(date: Date): string {
 
 /**
  * Calculates leave days, excluding configured weekly off days.
- * For half-day leave on a single valid working day, deducts 0.5 days.
+ * Deducts 1 day for each working day.
  */
 export function calculateLeaveDays(
   startDateStr: string,
   endDateStr: string,
-  isHalfDay: boolean = false,
   weeklyOffDays: number[] = [0]
 ): {
   calendarDays: number;
@@ -59,17 +58,6 @@ export function calculateLeaveDays(
     };
   }
 
-  // If half day, start and end must be same day
-  if (isHalfDay && startDateStr !== endDateStr) {
-    return {
-      calendarDays: 1,
-      deductibleDays: 0,
-      weeklyOffDaysCount: 0,
-      isValid: false,
-      errorMessage: 'Half-day leave must be on a single day.'
-    };
-  }
-
   // Count days
   let calendarDays = 0;
   let workingDays = 0;
@@ -84,25 +72,6 @@ export function calculateLeaveDays(
       workingDays++;
     }
     current.setDate(current.getDate() + 1);
-  }
-
-  // Check half day on a weekly off
-  if (isHalfDay) {
-    if (isWeeklyOff(start, weeklyOffDays)) {
-      return {
-        calendarDays: 1,
-        deductibleDays: 0,
-        weeklyOffDaysCount: 1,
-        isValid: false,
-        errorMessage: 'Half-day leave cannot be requested on a weekly off day.'
-      };
-    }
-    return {
-      calendarDays: 1,
-      deductibleDays: 0.5,
-      weeklyOffDaysCount: 0,
-      isValid: true
-    };
   }
 
   return {

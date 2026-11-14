@@ -52,7 +52,7 @@ export const AdminDashboard: React.FC = () => {
   const todayAttendance = attendance.filter(a => a.date === '2026-11-13');
   const presentToday = todayAttendance.filter(a => a.status === 'Present' || a.status === 'Late').length;
   const absentToday = todayAttendance.filter(a => a.status === 'Absent').length;
-  const onLeaveToday = todayAttendance.filter(a => a.status === 'On Leave' || a.status === 'Half Day').length;
+  const onLeaveToday = todayAttendance.filter(a => a.status === 'On Leave').length;
   const pendingRequests = leaveRequests.filter(r => r.status === 'Pending').length;
   const totalApprovedLeaves = leaveRequests.filter(r => r.status === 'Approved').length;
 

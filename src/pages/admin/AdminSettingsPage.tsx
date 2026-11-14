@@ -23,7 +23,6 @@ export const AdminSettingsPage: React.FC = () => {
   const [weeklyOffDays, setWeeklyOffDays] = useState<number[]>(settings.weeklyOffDays);
   const [carryForwardEnabled, setCarryForwardEnabled] = useState(settings.carryForwardEnabled);
   const [carryForwardExpiry, setCarryForwardExpiry] = useState(settings.carryForwardExpiry);
-  const [halfDayEnabled, setHalfDayEnabled] = useState(settings.halfDayEnabled);
   const [requireLeaveReason, setRequireLeaveReason] = useState(settings.requireLeaveReason);
 
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
@@ -57,7 +56,6 @@ export const AdminSettingsPage: React.FC = () => {
       weeklyOffDays,
       carryForwardEnabled,
       carryForwardExpiry,
-      halfDayEnabled,
       requireLeaveReason
     });
     success('System configuration saved and persisted to LocalStorage.');
@@ -71,7 +69,6 @@ export const AdminSettingsPage: React.FC = () => {
     setWeeklyOffDays([0]);
     setCarryForwardEnabled(true);
     setCarryForwardExpiry('None');
-    setHalfDayEnabled(true);
     setRequireLeaveReason(true);
   };
 
@@ -193,21 +190,6 @@ export const AdminSettingsPage: React.FC = () => {
                 type="checkbox"
                 checked={carryForwardEnabled}
                 onChange={e => setCarryForwardEnabled(e.target.checked)}
-                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-              />
-            </label>
-
-            <label className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100 cursor-pointer">
-              <div>
-                <span className="text-xs font-bold text-gray-900 block">Half-Day Leave Option (0.5 Day)</span>
-                <span className="text-[11px] text-gray-500">
-                  Enable staff to request morning or afternoon half-day leaves on working days
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                checked={halfDayEnabled}
-                onChange={e => setHalfDayEnabled(e.target.checked)}
                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
               />
             </label>

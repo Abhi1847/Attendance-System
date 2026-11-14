@@ -6,6 +6,8 @@ import {
   DocumentItem,
   SystemSettings,
   ActivityLog,
+  EmployeeInvitation,
+  PasswordChangeRequest,
   User
 } from '../../types';
 import {
@@ -28,12 +30,15 @@ const KEYS = {
   ATTENDANCE: 'attendflow_attendance',
   DOCUMENTS: 'attendflow_documents',
   SETTINGS: 'attendflow_settings',
-  ACTIVITY_LOGS: 'attendflow_activity_logs'
+  ACTIVITY_LOGS: 'attendflow_activity_logs',
+  INVITATIONS: 'attendflow_invitations',
+  PASSWORD_REQUESTS: 'attendflow_password_requests',
+  REGISTERED_CREDENTIALS: 'attendflow_registered_credentials'
 };
 
 // 1. AuthService
 export const AuthService = {
-  login: async (email: string, role: 'admin' | 'employee'): Promise<User> => {
+  login: async (email: string, role: 'admin' | 'employee', customPassword?: string): Promise<User> => {
     let user: User;
     if (role === 'admin') {
       user = {
@@ -45,15 +50,19 @@ export const AuthService = {
         designation: 'Operations Director'
       };
     } else {
+      // Check if user is an existing registered or demo employee
+      const employees = EmployeeService.getEmployees();
+      const matched = employees.find(e => e.email.toLowerCase() === email.toLowerCase());
+
       user = {
-        id: 'EMP002',
-        name: 'Sarah Johnson',
+        id: matched?.id || 'EMP002',
+        name: matched?.name || 'Sarah Johnson',
         email: email || 'employee@demo.com',
         role: 'employee',
-        employeeId: 'EMP002',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-        department: 'Product Design',
-        designation: 'Lead UI/UX Designer'
+        employeeId: matched?.id || 'EMP002',
+        avatar: matched?.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
+        department: matched?.department || 'Product Design',
+        designation: matched?.designation || 'Lead UI/UX Designer'
       };
     }
     saveToStorage(KEYS.CURRENT_USER, user);
@@ -66,6 +75,19 @@ export const AuthService = {
 
   logout: async (): Promise<void> => {
     localStorage.removeItem(KEYS.CURRENT_USER);
+  },
+
+  getRegisteredCredentials: (): Record<string, string> => {
+    return loadFromStorage<Record<string, string>>(KEYS.REGISTERED_CREDENTIALS, {
+      'admin@demo.com': 'admin123',
+      'employee@demo.com': 'employee123'
+    });
+  },
+
+  setCredential: (email: string, pass: string): void => {
+    const creds = AuthService.getRegisteredCredentials();
+    creds[email.toLowerCase()] = pass;
+    saveToStorage(KEYS.REGISTERED_CREDENTIALS, creds);
   }
 };
 
@@ -140,11 +162,43 @@ export const EmployeeService = {
 // 4. LeaveService
 export const LeaveService = {
   getLeaveRequests: (): LeaveRequest[] => {
-    return loadFromStorage<LeaveRequest[]>(KEYS.LEAVE_REQUESTS, INITIAL_LEAVE_REQUESTS);
+    const list = loadFromStorage<LeaveRequest[]>(KEYS.LEAVE_REQUESTS, INITIAL_LEAVE_REQUESTS);
+    // Sanitize any legacy half-day requests in user's localStorage
+    let modified = false;
+    const sanitized = list.map(r => {
+      if ((r as any).durationType === 'Half Day' || (r as any).halfDaySession) {
+        modified = true;
+        const copy: any = { ...r, durationType: 'Full Day' };
+        if (copy.deductibleDays === 0.5) copy.deductibleDays = 1;
+        delete copy.halfDaySession;
+        return copy as LeaveRequest;
+      }
+      return r;
+    });
+    if (modified) {
+      saveToStorage(KEYS.LEAVE_REQUESTS, sanitized);
+    }
+    return sanitized;
   },
 
   getAllBalances: (): Record<string, LeaveBalance> => {
-    return loadFromStorage<Record<string, LeaveBalance>>(KEYS.LEAVE_BALANCES, INITIAL_LEAVE_BALANCES);
+    const balances = loadFromStorage<Record<string, LeaveBalance>>(KEYS.LEAVE_BALANCES, INITIAL_LEAVE_BALANCES);
+    let modified = false;
+    for (const k of Object.keys(balances)) {
+      const b = balances[k];
+      if (b.currentYearTaken % 1 !== 0) {
+        b.currentYearTaken = Math.round(b.currentYearTaken);
+        modified = true;
+      }
+      if (b.carryForwardTaken % 1 !== 0) {
+        b.carryForwardTaken = Math.round(b.carryForwardTaken);
+        modified = true;
+      }
+    }
+    if (modified) {
+      saveToStorage(KEYS.LEAVE_BALANCES, balances);
+    }
+    return balances;
   },
 
   getBalanceByEmployeeId: (employeeId: string): LeaveBalance => {
@@ -313,7 +367,25 @@ export const LeaveService = {
 // 5. AttendanceService
 export const AttendanceService = {
   getAttendance: (): AttendanceRecord[] => {
-    return loadFromStorage<AttendanceRecord[]>(KEYS.ATTENDANCE, INITIAL_ATTENDANCE);
+    const list = loadFromStorage<AttendanceRecord[]>(KEYS.ATTENDANCE, INITIAL_ATTENDANCE);
+    let modified = false;
+    const sanitized = list.map(a => {
+      if ((a as any).status === 'Half Day') {
+        modified = true;
+        return {
+          ...a,
+          status: 'Present' as const,
+          checkOut: a.checkOut || '05:30 PM',
+          workingHours: '8h 30m',
+          notes: a.notes?.includes('half day') ? undefined : a.notes
+        };
+      }
+      return a;
+    });
+    if (modified) {
+      saveToStorage(KEYS.ATTENDANCE, sanitized);
+    }
+    return sanitized;
   },
 
   markLeaveAttendance: (
@@ -322,7 +394,7 @@ export const AttendanceService = {
     department: string,
     startDateStr: string,
     endDateStr: string,
-    durationType: 'Full Day' | 'Half Day'
+    durationType?: 'Full Day'
   ): void => {
     const attendance = AttendanceService.getAttendance();
     const start = new Date(startDateStr);
@@ -346,11 +418,11 @@ export const AttendanceService = {
           employeeName,
           department,
           date: dateStr,
-          status: durationType === 'Half Day' ? 'Half Day' : 'On Leave',
-          checkIn: durationType === 'Half Day' ? '09:00 AM' : undefined,
-          checkOut: durationType === 'Half Day' ? '01:30 PM' : undefined,
-          workingHours: durationType === 'Half Day' ? '4h 30m' : undefined,
-          notes: durationType === 'Half Day' ? 'Approved Half-Day Leave' : 'Approved Leave'
+          status: 'On Leave',
+          checkIn: undefined,
+          checkOut: undefined,
+          workingHours: undefined,
+          notes: 'Approved Leave'
         };
 
         if (existingIdx !== -1) {
@@ -404,7 +476,231 @@ export const DocumentService = {
   }
 };
 
-// 7. ActivityService
+// 8. InvitationService
+export const InvitationService = {
+  getInvitations: (): EmployeeInvitation[] => {
+    return loadFromStorage<EmployeeInvitation[]>(KEYS.INVITATIONS, [
+      {
+        id: 'INV-1001',
+        name: 'Alex Rivera',
+        email: 'alex.rivera@demo.com',
+        llcName: 'Acme West LLC',
+        jobLocation: 'California, US',
+        role: 'employee',
+        token: 'invite_alex_demo_token',
+        status: 'Pending',
+        invitedAt: '2026-11-13'
+      }
+    ]);
+  },
+
+  createInvitation: (inv: Omit<EmployeeInvitation, 'id' | 'token' | 'status' | 'invitedAt'>): EmployeeInvitation => {
+    const invitations = InvitationService.getInvitations();
+    const token = `inv_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const newInv: EmployeeInvitation = {
+      ...inv,
+      id: `INV-${Date.now().toString().slice(-4)}`,
+      token,
+      status: 'Pending',
+      invitedAt: new Date().toISOString().split('T')[0]
+    };
+    invitations.unshift(newInv);
+    saveToStorage(KEYS.INVITATIONS, invitations);
+
+    ActivityService.logActivity({
+      userName: 'Admin',
+      userRole: 'admin',
+      action: 'Invited Employee',
+      details: `Sent invitation to ${inv.name} (${inv.email}) for ${inv.llcName}`,
+      type: 'employee'
+    });
+
+    return newInv;
+  },
+
+  getInvitationByToken: (token: string): EmployeeInvitation | undefined => {
+    const list = InvitationService.getInvitations();
+    return list.find(i => i.token === token);
+  },
+
+  importInvitationIfMissing: (inv: EmployeeInvitation): void => {
+    const list = InvitationService.getInvitations();
+    if (!list.some(i => i.token === inv.token)) {
+      list.unshift(inv);
+      saveToStorage(KEYS.INVITATIONS, list);
+    }
+  },
+
+  acceptInvitationAndRegister: (
+    token: string,
+    password: string,
+    customData?: { phone?: string; area?: string; fallbackInvitation?: EmployeeInvitation }
+  ): { success: boolean; employee?: Employee; message: string } => {
+    let invitations = InvitationService.getInvitations();
+    let invIndex = invitations.findIndex(i => i.token === token);
+
+    // If invitation is missing in this browser's LocalStorage, restore it from fallbackInvitation
+    if (invIndex === -1 && customData?.fallbackInvitation) {
+      invitations.unshift(customData.fallbackInvitation);
+      saveToStorage(KEYS.INVITATIONS, invitations);
+      invIndex = 0;
+    }
+
+    if (invIndex === -1) {
+      return { success: false, message: 'Invalid or expired invitation link.' };
+    }
+    const inv = invitations[invIndex];
+    if (inv.status === 'Registered') {
+      return { success: false, message: 'This invitation has already been registered.' };
+    }
+
+    // 1. Create employee
+    const employees = EmployeeService.getEmployees();
+    const empId = `EMP${String(employees.length + 1).padStart(3, '0')}`;
+    const newEmployee: Employee = {
+      id: empId,
+      name: inv.name,
+      email: inv.email,
+      avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
+      department: 'Engineering',
+      designation: 'Associate Specialist',
+      joiningDate: new Date().toISOString().split('T')[0],
+      phone: customData?.phone || '+1 (555) 000-0000',
+      status: 'Active',
+      annualLeave: 14,
+      carryForwardLeave: 0,
+      leaveTaken: 0,
+      leaveRemaining: 14,
+      attendancePercentage: 100,
+      llcName: inv.llcName,
+      jobLocation: inv.jobLocation,
+      area: customData?.area || 'Headquarters'
+    };
+
+    employees.push(newEmployee);
+    saveToStorage(KEYS.EMPLOYEES, employees);
+
+    // 2. Initialize leave balance
+    const balances = LeaveService.getAllBalances();
+    balances[empId] = {
+      employeeId: empId,
+      annualAllocation: 14,
+      currentYearTaken: 0,
+      carryForwardAllocation: 0,
+      carryForwardTaken: 0
+    };
+    saveToStorage(KEYS.LEAVE_BALANCES, balances);
+
+    // 3. Save credentials
+    AuthService.setCredential(inv.email, password);
+
+    // 4. Update invitation status
+    invitations[invIndex] = {
+      ...inv,
+      status: 'Registered',
+      registeredAt: new Date().toISOString().split('T')[0]
+    };
+    saveToStorage(KEYS.INVITATIONS, invitations);
+
+    ActivityService.logActivity({
+      userName: inv.name,
+      userRole: 'employee',
+      action: 'Account Registered',
+      details: `${inv.name} registered account via invite link`,
+      type: 'employee'
+    });
+
+    return { success: true, employee: newEmployee, message: 'Registration complete! You can now log in.' };
+  }
+};
+
+// 9. PasswordRequestService
+export const PasswordRequestService = {
+  getRequests: (): PasswordChangeRequest[] => {
+    return loadFromStorage<PasswordChangeRequest[]>(KEYS.PASSWORD_REQUESTS, [
+      {
+        id: 'PR-101',
+        employeeId: 'EMP002',
+        employeeName: 'Sarah Johnson',
+        email: 'employee@demo.com',
+        reason: 'Routine quarterly password refresh',
+        status: 'Pending',
+        requestedAt: '2026-11-13'
+      }
+    ]);
+  },
+
+  createRequest: (employeeId: string, employeeName: string, email: string, reason?: string): PasswordChangeRequest => {
+    const list = PasswordRequestService.getRequests();
+    const newReq: PasswordChangeRequest = {
+      id: `PR-${Date.now().toString().slice(-4)}`,
+      employeeId,
+      employeeName,
+      email,
+      reason: reason || 'Requested by employee',
+      status: 'Pending',
+      requestedAt: new Date().toISOString().split('T')[0]
+    };
+    list.unshift(newReq);
+    saveToStorage(KEYS.PASSWORD_REQUESTS, list);
+
+    ActivityService.logActivity({
+      userName: employeeName,
+      userRole: 'employee',
+      action: 'Requested Password Reset',
+      details: `${employeeName} submitted a password reset request`,
+      type: 'system'
+    });
+
+    return newReq;
+  },
+
+  approveRequest: (requestId: string, tempPassword: string = 'Welcome@123'): boolean => {
+    const list = PasswordRequestService.getRequests();
+    const index = list.findIndex(r => r.id === requestId);
+    if (index === -1) return false;
+
+    const req = list[index];
+    list[index] = {
+      ...req,
+      status: 'Approved',
+      tempPassword,
+      reviewedAt: new Date().toISOString().split('T')[0],
+      reviewedBy: 'Admin'
+    };
+    saveToStorage(KEYS.PASSWORD_REQUESTS, list);
+
+    // Update credential to temporary password
+    AuthService.setCredential(req.email, tempPassword);
+
+    ActivityService.logActivity({
+      userName: 'Admin',
+      userRole: 'admin',
+      action: 'Approved Password Reset',
+      details: `Generated temporary password for ${req.employeeName}`,
+      type: 'system'
+    });
+
+    return true;
+  },
+
+  rejectRequest: (requestId: string): boolean => {
+    const list = PasswordRequestService.getRequests();
+    const index = list.findIndex(r => r.id === requestId);
+    if (index === -1) return false;
+
+    list[index] = {
+      ...list[index],
+      status: 'Rejected',
+      reviewedAt: new Date().toISOString().split('T')[0],
+      reviewedBy: 'Admin'
+    };
+    saveToStorage(KEYS.PASSWORD_REQUESTS, list);
+    return true;
+  }
+};
+
+// 10. ActivityService
 export const ActivityService = {
   getActivityLogs: (): ActivityLog[] => {
     return loadFromStorage<ActivityLog[]>(KEYS.ACTIVITY_LOGS, INITIAL_ACTIVITY_LOGS);
@@ -424,4 +720,6 @@ export const ActivityService = {
     saveToStorage(KEYS.ACTIVITY_LOGS, logs);
   }
 };
+
+
 

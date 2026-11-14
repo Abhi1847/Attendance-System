@@ -21,8 +21,6 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ''
         return 'bg-rose-50 text-rose-700 border-rose-200';
       case 'Cancelled':
         return 'bg-gray-100 text-gray-700 border-gray-200';
-      case 'Half Day':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       case 'Late':
         return 'bg-orange-50 text-orange-700 border-orange-200';
       case 'On Leave':

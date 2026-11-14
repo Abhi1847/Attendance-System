@@ -28,9 +28,8 @@ export const EmployeeAttendancePage: React.FC = () => {
   const presentDays = myRecords.filter(a => a.status === 'Present').length;
   const absentDays = myRecords.filter(a => a.status === 'Absent').length;
   const lateDays = myRecords.filter(a => a.status === 'Late').length;
-  const halfDays = myRecords.filter(a => a.status === 'Half Day').length;
   const total = myRecords.length || 1;
-  const attendanceRate = (((presentDays + lateDays + halfDays * 0.5) / total) * 100).toFixed(1);
+  const attendanceRate = (((presentDays + lateDays) / total) * 100).toFixed(1);
 
   const filteredRecords = myRecords.filter(r => {
     const matchesStatus = filterStatus === 'All' || r.status === filterStatus;
@@ -49,7 +48,7 @@ export const EmployeeAttendancePage: React.FC = () => {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs text-center">
           <span className="text-[11px] text-gray-400 uppercase font-semibold block">Present</span>
           <span className="text-2xl font-bold text-emerald-600 mt-1 block">{presentDays}</span>
@@ -63,10 +62,6 @@ export const EmployeeAttendancePage: React.FC = () => {
           <span className="text-2xl font-bold text-amber-600 mt-1 block">{lateDays}</span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs text-center">
-          <span className="text-[11px] text-gray-400 uppercase font-semibold block">Half Days</span>
-          <span className="text-2xl font-bold text-indigo-600 mt-1 block">{halfDays}</span>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs text-center">
           <span className="text-[11px] text-gray-400 uppercase font-semibold block">Rate</span>
           <span className="text-2xl font-bold text-blue-700 mt-1 block">{attendanceRate}%</span>
         </div>
@@ -76,7 +71,7 @@ export const EmployeeAttendancePage: React.FC = () => {
       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs flex items-center justify-between">
         <span className="text-xs font-semibold text-gray-700">Filter Status:</span>
         <div className="flex space-x-1.5 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
-          {['All', 'Present', 'Late', 'Half Day', 'On Leave', 'Absent'].map(st => (
+          {['All', 'Present', 'Late', 'On Leave', 'Absent'].map(st => (
             <button
               key={st}
               onClick={() => setFilterStatus(st)}

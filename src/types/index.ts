@@ -13,9 +13,7 @@ export interface User {
 
 export type LeaveType = 'Annual Leave' | 'Casual Leave' | 'Sick Leave' | 'Personal Leave' | 'Vacation' | 'Unpaid Leave';
 
-export type LeaveDurationType = 'Full Day' | 'Half Day';
-
-export type HalfDaySession = 'Morning' | 'Afternoon' | null;
+export type LeaveDurationType = 'Full Day';
 
 export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
 
@@ -27,8 +25,7 @@ export interface LeaveRequest {
   leaveType: LeaveType;
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
-  durationType: LeaveDurationType;
-  halfDaySession?: HalfDaySession;
+  durationType?: LeaveDurationType;
   calendarDays: number;
   deductibleDays: number;
   weeklyOffDaysExcluded: number;
@@ -57,7 +54,7 @@ export interface LeaveBalance {
   // totalRemaining = currentYearRemaining + carryForwardRemaining
 }
 
-export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'Half Day' | 'On Leave';
+export type AttendanceStatus = 'Present' | 'Absent' | 'Late' | 'On Leave';
 
 export interface AttendanceRecord {
   id: string;
@@ -112,7 +109,6 @@ export interface SystemSettings {
   weeklyOffDays: number[]; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday (Default [0])
   carryForwardEnabled: boolean;
   carryForwardExpiry: string; // 'None' or '3 Months' or '6 Months' or 'Year End'
-  halfDayEnabled: boolean;
   requireLeaveReason: boolean;
   autoApproveSickLeaveUnder2Days: boolean;
   allowPastDateRequests: boolean;
@@ -127,5 +123,32 @@ export interface ActivityLog {
   action: string;
   details: string;
   type: 'leave' | 'attendance' | 'employee' | 'document' | 'system';
+}
+
+export interface EmployeeInvitation {
+  id: string;
+  name: string;
+  email: string;
+  llcName: string;
+  jobLocation: string;
+  role: UserRole;
+  token: string;
+  status: 'Pending' | 'Registered' | 'Expired';
+  invitedAt: string;
+  registeredAt?: string;
+  payload?: string; // base64 encoded invitation details for cross-browser / incognito self-sufficiency
+}
+
+export interface PasswordChangeRequest {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  email: string;
+  reason?: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  tempPassword?: string;
+  requestedAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
 }
 

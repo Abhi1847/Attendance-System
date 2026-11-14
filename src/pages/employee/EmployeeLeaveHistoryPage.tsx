@@ -33,9 +33,6 @@ export const EmployeeLeaveHistoryPage: React.FC = () => {
 
   const myRequests = leaveRequests.filter(r => r.employeeId === employeeId);
 
-  // Stats calculation
-  const halfDayCount = myRequests.filter(r => r.durationType === 'Half Day' && r.status === 'Approved').length;
-
   const handleCancelConfirmed = () => {
     if (!selectedRequest) return;
     const ok = cancelLeave(selectedRequest.id);
@@ -62,7 +59,7 @@ export const EmployeeLeaveHistoryPage: React.FC = () => {
       </div>
 
       {/* Leave Summary Top Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
           <span className="text-[11px] text-gray-400 uppercase font-semibold block">Total Leave Taken</span>
           <span className="text-2xl font-bold text-gray-900 mt-1 block">{summary.totalTaken}d</span>
@@ -87,11 +84,6 @@ export const EmployeeLeaveHistoryPage: React.FC = () => {
           <span className="text-[10px] text-indigo-600 font-medium">
             {summary.carryForwardTaken}d used of {summary.carryForwardAllocation}d available
           </span>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
-          <span className="text-[11px] text-gray-400 uppercase font-semibold block">Half-Day Leaves</span>
-          <span className="text-2xl font-bold text-amber-600 mt-1 block">{halfDayCount * 0.5}d</span>
-          <span className="text-[10px] text-gray-400">({halfDayCount} sessions)</span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
           <span className="text-[11px] text-gray-400 uppercase font-semibold block">Remaining Balance</span>
@@ -137,10 +129,7 @@ export const EmployeeLeaveHistoryPage: React.FC = () => {
                     )}
                   </td>
                   <td className="px-5 py-4">
-                    {req.durationType}
-                    {req.halfDaySession && (
-                      <span className="text-[10px] text-indigo-600 block">({req.halfDaySession})</span>
-                    )}
+                    {req.durationType || 'Full Day'}
                   </td>
                   <td className="px-5 py-4 max-w-xs truncate text-gray-500" title={req.reason}>
                     {req.reason}
@@ -232,7 +221,7 @@ export const EmployeeLeaveHistoryPage: React.FC = () => {
                       {selectedRequest.deductibleDays} day(s)
                     </p>
                     <span className="text-[10px] text-blue-600 block">
-                      {selectedRequest.durationType} {selectedRequest.halfDaySession ? `(${selectedRequest.halfDaySession})` : ''} • {selectedRequest.calendarDays} Cal. days
+                      {selectedRequest.calendarDays} Calendar days
                     </span>
                   </div>
                 </div>

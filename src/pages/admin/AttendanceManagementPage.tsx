@@ -115,7 +115,6 @@ export const AttendanceManagementPage: React.FC = () => {
             <option value="Present">Present</option>
             <option value="Absent">Absent</option>
             <option value="Late">Late</option>
-            <option value="Half Day">Half Day</option>
             <option value="On Leave">On Leave</option>
           </select>
         </div>

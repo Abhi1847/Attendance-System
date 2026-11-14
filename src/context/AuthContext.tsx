@@ -4,7 +4,7 @@ import { AuthService } from '../services/mock/storageService';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, role: 'admin' | 'employee') => Promise<User>;
+  login: (email: string, role: 'admin' | 'employee', customPassword?: string) => Promise<User>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -26,8 +26,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
-  const login = async (email: string, role: 'admin' | 'employee') => {
-    const loggedInUser = await AuthService.login(email, role);
+  const login = async (email: string, role: 'admin' | 'employee', customPassword?: string) => {
+    const loggedInUser = await AuthService.login(email, role, customPassword);
     setUser(loggedInUser);
     return loggedInUser;
   };

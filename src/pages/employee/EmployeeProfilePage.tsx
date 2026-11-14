@@ -12,14 +12,17 @@ import {
   MapPin,
   Shield,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  KeyRound,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import { getLeaveSummary } from '../../utils/leaveCalculations';
 
 export const EmployeeProfilePage: React.FC = () => {
   const { user } = useAuth();
-  const { employees, getEmployeeBalance } = useAppData();
-  const { success } = useToast();
+  const { employees, getEmployeeBalance, passwordRequests, requestPasswordChange } = useAppData();
+  const { success, error } = useToast();
 
   const employeeId = user?.employeeId || 'EMP002';
   const employeeData = employees.find(e => e.id === employeeId);
@@ -31,9 +34,29 @@ export const EmployeeProfilePage: React.FC = () => {
   const [jobLocation, setJobLocation] = useState(employeeData?.jobLocation || 'California, US');
   const [emergency, setEmergency] = useState(employeeData?.emergencyContact || 'David Johnson (+1 555-876-5432)');
 
+  const [pwdModalOpen, setPwdModalOpen] = useState(false);
+  const [pwdReason, setPwdReason] = useState('');
+
+  const myPendingPwdReq = passwordRequests.find(
+    p => p.employeeId === employeeId && p.status === 'Pending'
+  );
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     success('Profile updated successfully.');
+  };
+
+  const handlePasswordRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    requestPasswordChange(
+      employeeId,
+      user?.name || employeeData?.name || 'Employee',
+      user?.email || 'employee@demo.com',
+      pwdReason
+    );
+    success('Password change request submitted! Admin will review and provide updated credentials.');
+    setPwdModalOpen(false);
+    setPwdReason('');
   };
 
   return (
@@ -152,6 +175,120 @@ export const EmployeeProfilePage: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* Account Security & Password Change Request Section */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold text-gray-900 flex items-center">
+              <KeyRound className="w-4 h-4 text-blue-600 mr-2" />
+              Account Security & Password
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              To maintain company compliance, direct password modifications are restricted. You can request a password change from your administrator.
+            </p>
+          </div>
+
+          {myPendingPwdReq ? (
+            <div className="inline-flex items-center px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 text-xs font-semibold border border-amber-200">
+              <Clock className="w-3.5 h-3.5 mr-1.5 text-amber-600 animate-pulse" />
+              Pending Admin Review
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setPwdModalOpen(true)}
+              className="inline-flex items-center px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold transition"
+            >
+              <KeyRound className="w-3.5 h-3.5 mr-1.5 text-gray-600" />
+              Request Password Change
+            </button>
+          )}
+        </div>
+
+        {myPendingPwdReq && (
+          <div className="p-3 bg-amber-50/70 border border-amber-200 rounded-2xl text-xs text-amber-900 flex items-start space-x-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold block">Password Request #{myPendingPwdReq.id} Under Review</span>
+              <span className="text-[11px] text-amber-700 block mt-0.5">
+                Submitted on {myPendingPwdReq.requestedAt}. Reason: "{myPendingPwdReq.reason || 'None provided'}". Once approved by the administrator, your new temporary password will be available.
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Password Request Modal */}
+      {pwdModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div
+              className="fixed inset-0 bg-gray-950/60 backdrop-blur-xs transition-opacity"
+              onClick={() => setPwdModalOpen(false)}
+            />
+            <div className="relative w-full max-w-md rounded-2xl bg-white text-left shadow-2xl transition-all border border-gray-100 p-6 z-10 animate-fade-in">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">Request Password Reset</h3>
+                  <p className="text-xs text-gray-500">
+                    Administrator authorization required for password changes.
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handlePasswordRequest} className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">Employee Account</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={`${user?.name} (${user?.email})`}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs bg-gray-50 text-gray-500 font-medium cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">Reason for Change (Optional)</label>
+                  <textarea
+                    rows={3}
+                    value={pwdReason}
+                    onChange={e => setPwdReason(e.target.value)}
+                    placeholder="e.g. Periodic password update, suspected credential leak, new device..."
+                    className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-blue-600 resize-none"
+                  />
+                </div>
+
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-blue-900 text-[11px] flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Upon review, the system administrator will issue a temporary password or approval notification.
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setPwdModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-xs font-semibold hover:bg-gray-200 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition"
+                  >
+                    Send Request to Admin
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

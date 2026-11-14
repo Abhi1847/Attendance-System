@@ -37,9 +37,8 @@ export const EmployeeDashboard: React.FC = () => {
   const presentDays = myAttendance.filter(a => a.status === 'Present').length;
   const absentDays = myAttendance.filter(a => a.status === 'Absent').length;
   const lateDays = myAttendance.filter(a => a.status === 'Late').length;
-  const halfDays = myAttendance.filter(a => a.status === 'Half Day').length;
   const totalLogged = myAttendance.length || 1;
-  const attendanceRate = (((presentDays + lateDays + halfDays * 0.5) / totalLogged) * 100).toFixed(1);
+  const attendanceRate = (((presentDays + lateDays) / totalLogged) * 100).toFixed(1);
 
   // Today's attendance
   const todayRecord = myAttendance.find(a => a.date === '2026-11-13');
@@ -136,7 +135,7 @@ export const EmployeeDashboard: React.FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-3 bg-gray-50 rounded-xl text-center">
             <span className="text-xs text-gray-500 block">Present Days</span>
             <span className="text-xl font-bold text-emerald-600">{presentDays}</span>
@@ -148,10 +147,6 @@ export const EmployeeDashboard: React.FC = () => {
           <div className="p-3 bg-gray-50 rounded-xl text-center">
             <span className="text-xs text-gray-500 block">Late Days</span>
             <span className="text-xl font-bold text-amber-600">{lateDays}</span>
-          </div>
-          <div className="p-3 bg-gray-50 rounded-xl text-center">
-            <span className="text-xs text-gray-500 block">Half Days</span>
-            <span className="text-xl font-bold text-indigo-600">{halfDays}</span>
           </div>
           <div className="p-3 bg-gray-50 rounded-xl text-center">
             <span className="text-xs text-gray-500 block">Attendance Rate</span>
@@ -195,11 +190,6 @@ export const EmployeeDashboard: React.FC = () => {
                   <td className="px-5 py-4 font-mono font-bold text-gray-900">{req.id}</td>
                   <td className="px-5 py-4">
                     <span className="font-semibold text-gray-900">{req.leaveType}</span>
-                    {req.halfDaySession && (
-                      <span className="text-[10px] text-indigo-600 block">
-                        ({req.halfDaySession} Half-Day)
-                      </span>
-                    )}
                   </td>
                   <td className="px-5 py-4 text-gray-600">
                     {formatDate(req.startDate)} to {formatDate(req.endDate)}

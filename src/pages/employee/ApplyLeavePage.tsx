@@ -11,7 +11,7 @@ import {
   getLeaveSummary,
   checkOverlappingLeave
 } from '../../utils/leaveCalculations';
-import { LeaveType, LeaveDurationType, HalfDaySession } from '../../types';
+import { LeaveType, LeaveDurationType } from '../../types';
 import {
   CalendarPlus,
   Calendar,
@@ -38,8 +38,6 @@ export const ApplyLeavePage: React.FC = () => {
   const [leaveType, setLeaveType] = useState<LeaveType>('Annual Leave');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [durationType, setDurationType] = useState<LeaveDurationType>('Full Day');
-  const [halfDaySession, setHalfDaySession] = useState<HalfDaySession>('Morning');
   const [reason, setReason] = useState('');
   const [uploadedFile, setUploadedFile] = useState<{
     name: string;
@@ -49,11 +47,9 @@ export const ApplyLeavePage: React.FC = () => {
   } | null>(null);
 
   // Calculations Memo
-  const isHalfDay = durationType === 'Half Day';
   const calculation = useMemo(() => {
-    const end = isHalfDay ? startDate : endDate;
-    return calculateLeaveDays(startDate, end, isHalfDay, settings.weeklyOffDays);
-  }, [startDate, endDate, isHalfDay, settings.weeklyOffDays]);
+    return calculateLeaveDays(startDate, endDate, settings.weeklyOffDays);
+  }, [startDate, endDate, settings.weeklyOffDays]);
 
   // Projected Balance & Deductions Memo
   const projected = useMemo(() => {
@@ -78,32 +74,25 @@ export const ApplyLeavePage: React.FC = () => {
     const consumption = calculateDeductionConsumption(balance, calculation.deductibleDays);
     return {
       isPossible: consumption.isPossible,
-      projectedRemaining: balanceSummary.totalRemaining - calculation.deductibleDays,
+      projectedRemaining: (balanceSummary.annualAllocation - consumption.newCurrentYearTaken) +
+        (balanceSummary.carryForwardAllocation - consumption.newCarryForwardTaken),
       fromCurrent: consumption.fromCurrentYear,
       fromCarryForward: consumption.fromCarryForward
     };
   }, [calculation, balance, balanceSummary, leaveType]);
 
-  // Validation
+  // Overlapping Validation Memo
   const hasOverlap = useMemo(() => {
-    if (!startDate) return false;
-    const end = isHalfDay ? startDate : endDate;
-    if (!end) return false;
-
-    const myRequests = leaveRequests.filter(r => r.employeeId === employeeId);
-    return checkOverlappingLeave(startDate, end, myRequests);
-  }, [startDate, endDate, isHalfDay, leaveRequests, employeeId]);
+    if (!startDate || !endDate) return false;
+    const myExisting = leaveRequests.filter(r => r.employeeId === employeeId);
+    return checkOverlappingLeave(startDate, endDate, myExisting);
+  }, [startDate, endDate, leaveRequests, employeeId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!startDate) {
-      error('Please select a start date.');
-      return;
-    }
-
-    if (!isHalfDay && !endDate) {
-      error('Please select an end date.');
+    if (!startDate || !endDate) {
+      error('Please select both start and end dates.');
       return;
     }
 
@@ -113,7 +102,12 @@ export const ApplyLeavePage: React.FC = () => {
     }
 
     if (hasOverlap) {
-      error('You already have a leave request during this date range.');
+      error('You already have an existing leave request that overlaps with these dates.');
+      return;
+    }
+
+    if (calculation.deductibleDays <= 0) {
+      error('The selected date range consists only of weekly off days.');
       return;
     }
 
@@ -127,17 +121,14 @@ export const ApplyLeavePage: React.FC = () => {
       return;
     }
 
-    const effectiveEnd = isHalfDay ? startDate : endDate;
-
     createLeaveRequest({
       employeeId,
       employeeName: user?.name || 'Sarah Johnson',
       department: user?.department || 'Product Design',
       leaveType,
       startDate,
-      endDate: effectiveEnd,
-      durationType,
-      halfDaySession: isHalfDay ? halfDaySession : undefined,
+      endDate,
+      durationType: 'Full Day',
       calendarDays: calculation.calendarDays,
       deductibleDays: calculation.deductibleDays,
       weeklyOffDaysExcluded: calculation.weeklyOffDaysCount,
@@ -186,105 +177,34 @@ export const ApplyLeavePage: React.FC = () => {
               </select>
             </div>
 
-            {/* Duration Type: Full Day or Half Day */}
-            <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-1.5">Leave Duration</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setDurationType('Full Day')}
-                  className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition ${
-                    durationType === 'Full Day'
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                      : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                  }`}
-                >
-                  Full-Day Leave
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDurationType('Half Day');
-                    if (startDate) setEndDate(startDate);
-                  }}
-                  className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition ${
-                    durationType === 'Half Day'
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                      : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                  }`}
-                >
-                  Half-Day Leave (0.5 Day)
-                </button>
-              </div>
-            </div>
-
-            {/* Half Day Session selector if Half Day */}
-            {durationType === 'Half Day' && (
-              <div className="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-2">
-                <label className="text-xs font-semibold text-indigo-900 block">Select Half-Day Session</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <label className="flex items-center space-x-2 p-2.5 rounded-xl bg-white border border-indigo-200 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="halfDaySession"
-                      checked={halfDaySession === 'Morning'}
-                      onChange={() => setHalfDaySession('Morning')}
-                      className="text-blue-600"
-                    />
-                    <span className="text-xs font-bold text-gray-800">Morning Session</span>
-                  </label>
-                  <label className="flex items-center space-x-2 p-2.5 rounded-xl bg-white border border-indigo-200 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="halfDaySession"
-                      checked={halfDaySession === 'Afternoon'}
-                      onChange={() => setHalfDaySession('Afternoon')}
-                      className="text-blue-600"
-                    />
-                    <span className="text-xs font-bold text-gray-800">Afternoon Session</span>
-                  </label>
-                </div>
-                <p className="text-[11px] text-indigo-700">
-                  Half-day leave deducts exactly 0.5 days from your leave balance.
-                </p>
-              </div>
-            )}
-
             {/* Date Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1.5">
-                  {isHalfDay ? 'Leave Date' : 'Start Date'}
-                </label>
+                <label className="text-xs font-semibold text-gray-700 block mb-1.5">Start Date</label>
                 <input
                   type="date"
                   required
                   value={startDate}
-                  onChange={e => {
-                    setStartDate(e.target.value);
-                    if (isHalfDay) setEndDate(e.target.value);
-                  }}
+                  onChange={e => setStartDate(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-600 bg-gray-50/50"
                 />
               </div>
 
-              {!isHalfDay && (
-                <div>
-                  <label className="text-xs font-semibold text-gray-700 block mb-1.5">End Date</label>
-                  <input
-                    type="date"
-                    required
-                    min={startDate}
-                    value={endDate}
-                    onChange={e => setEndDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-600 bg-gray-50/50"
-                  />
-                </div>
-              )}
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1.5">End Date</label>
+                <input
+                  type="date"
+                  required
+                  min={startDate}
+                  value={endDate}
+                  onChange={e => setEndDate(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-600 bg-gray-50/50"
+                />
+              </div>
             </div>
 
             {/* Dynamic Calculation Feedback Pill */}
-            {startDate && (
+            {startDate && endDate && (
               <div
                 className={`p-4 rounded-2xl border text-xs leading-relaxed ${
                   !calculation.isValid || hasOverlap || (leaveType !== 'Unpaid Leave' && !projected.isPossible)
@@ -421,7 +341,6 @@ export const ApplyLeavePage: React.FC = () => {
               <li>Every employee receives 14 annual leave days.</li>
               <li>Current-year quota is consumed before carry-forward balance.</li>
               <li>Sundays and configured weekly off days are excluded automatically.</li>
-              <li>Half-day leave requests deduct 0.5 days on working days.</li>
             </ul>
           </div>
         </div>
@@ -429,4 +348,3 @@ export const ApplyLeavePage: React.FC = () => {
     </div>
   );
 };
-

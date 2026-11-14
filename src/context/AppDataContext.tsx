@@ -6,7 +6,9 @@ import {
   AttendanceRecord,
   DocumentItem,
   SystemSettings,
-  ActivityLog
+  ActivityLog,
+  EmployeeInvitation,
+  PasswordChangeRequest
 } from '../types';
 import {
   EmployeeService,
@@ -14,7 +16,9 @@ import {
   AttendanceService,
   DocumentService,
   SettingsService,
-  ActivityService
+  ActivityService,
+  InvitationService,
+  PasswordRequestService
 } from '../services/mock/storageService';
 
 interface AppDataContextType {
@@ -25,6 +29,8 @@ interface AppDataContextType {
   documents: DocumentItem[];
   settings: SystemSettings;
   activityLogs: ActivityLog[];
+  invitations: EmployeeInvitation[];
+  passwordRequests: PasswordChangeRequest[];
   refreshData: () => void;
   updateSettings: (newSettings: SystemSettings) => void;
   resetDemoData: () => void;
@@ -35,6 +41,12 @@ interface AppDataContextType {
   addDocument: (doc: Omit<DocumentItem, 'id' | 'uploadDate'>) => DocumentItem;
   deleteDocument: (id: string) => boolean;
   getEmployeeBalance: (empId: string) => LeaveBalance;
+  inviteEmployee: (inv: Omit<EmployeeInvitation, 'id' | 'token' | 'status' | 'invitedAt'>) => EmployeeInvitation;
+  acceptInvitationAndRegister: (token: string, password: string, customData?: { phone?: string; area?: string; fallbackInvitation?: EmployeeInvitation }) => { success: boolean; employee?: Employee; message: string };
+  importInvitationIfMissing: (inv: EmployeeInvitation) => void;
+  requestPasswordChange: (employeeId: string, employeeName: string, email: string, reason?: string) => PasswordChangeRequest;
+  approvePasswordChange: (requestId: string, tempPassword?: string) => boolean;
+  rejectPasswordChange: (requestId: string) => boolean;
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
@@ -47,6 +59,8 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [settings, setSettings] = useState<SystemSettings>(SettingsService.getSettings());
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [invitations, setInvitations] = useState<EmployeeInvitation[]>([]);
+  const [passwordRequests, setPasswordRequests] = useState<PasswordChangeRequest[]>([]);
 
   const loadAll = () => {
     setEmployees(EmployeeService.getEmployees());
@@ -56,6 +70,8 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setDocuments(DocumentService.getDocuments());
     setSettings(SettingsService.getSettings());
     setActivityLogs(ActivityService.getActivityLogs());
+    setInvitations(InvitationService.getInvitations());
+    setPasswordRequests(PasswordRequestService.getRequests());
   };
 
   useEffect(() => {
@@ -116,6 +132,50 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return LeaveService.getBalanceByEmployeeId(empId);
   };
 
+  const inviteEmployee = (inv: Omit<EmployeeInvitation, 'id' | 'token' | 'status' | 'invitedAt'>) => {
+    const created = InvitationService.createInvitation(inv);
+    loadAll();
+    return created;
+  };
+
+  const acceptInvitationAndRegister = (
+    token: string,
+    password: string,
+    customData?: { phone?: string; area?: string; fallbackInvitation?: EmployeeInvitation }
+  ) => {
+    const res = InvitationService.acceptInvitationAndRegister(token, password, customData);
+    loadAll();
+    return res;
+  };
+
+  const importInvitationIfMissing = (inv: EmployeeInvitation) => {
+    InvitationService.importInvitationIfMissing(inv);
+    loadAll();
+  };
+
+  const requestPasswordChange = (
+    employeeId: string,
+    employeeName: string,
+    email: string,
+    reason?: string
+  ) => {
+    const req = PasswordRequestService.createRequest(employeeId, employeeName, email, reason);
+    loadAll();
+    return req;
+  };
+
+  const approvePasswordChange = (requestId: string, tempPassword?: string) => {
+    const ok = PasswordRequestService.approveRequest(requestId, tempPassword);
+    loadAll();
+    return ok;
+  };
+
+  const rejectPasswordChange = (requestId: string) => {
+    const ok = PasswordRequestService.rejectRequest(requestId);
+    loadAll();
+    return ok;
+  };
+
   return (
     <AppDataContext.Provider
       value={{
@@ -126,6 +186,8 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
         documents,
         settings,
         activityLogs,
+        invitations,
+        passwordRequests,
         refreshData,
         updateSettings,
         resetDemoData,
@@ -135,7 +197,13 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
         createLeaveRequest,
         addDocument,
         deleteDocument,
-        getEmployeeBalance
+        getEmployeeBalance,
+        inviteEmployee,
+        acceptInvitationAndRegister,
+        importInvitationIfMissing,
+        requestPasswordChange,
+        approvePasswordChange,
+        rejectPasswordChange
       }}
     >
       {children}

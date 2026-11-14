@@ -48,8 +48,7 @@ export const LeaveHistoryPage: React.FC = () => {
       CalendarDays: r.calendarDays,
       DeductibleDays: r.deductibleDays,
       WeeklyOffExcluded: r.weeklyOffDaysExcluded,
-      Duration: r.durationType,
-      HalfDaySession: r.halfDaySession || 'None',
+      Duration: r.durationType || 'Full Day',
       Status: r.status,
       Reason: r.reason,
       RequestedOn: r.requestDate,
@@ -152,11 +151,6 @@ export const LeaveHistoryPage: React.FC = () => {
                   </td>
                   <td className="px-5 py-4">
                     <span className="font-medium text-gray-900">{req.leaveType}</span>
-                    {req.halfDaySession && (
-                      <span className="text-[10px] text-indigo-600 block">
-                        ({req.halfDaySession} Half-Day)
-                      </span>
-                    )}
                   </td>
                   <td className="px-5 py-4 text-gray-600">
                     {formatDate(req.startDate)} to {formatDate(req.endDate)}

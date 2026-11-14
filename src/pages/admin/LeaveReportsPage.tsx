@@ -36,7 +36,7 @@ export const LeaveReportsPage: React.FC = () => {
   const { success } = useToast();
 
   const [activeReportTab, setActiveReportTab] = useState<
-    'employee' | 'area' | 'monthly' | 'utilization' | 'carryForward' | 'halfDay'
+    'employee' | 'area' | 'monthly' | 'utilization' | 'carryForward'
   >('employee');
 
   // 1. Employee-wise report
@@ -78,28 +78,22 @@ export const LeaveReportsPage: React.FC = () => {
     totalRemaining: areaMap[a].totalRemaining
   }));
 
-  // 3. Half-Day Report
-  const halfDayRequests = leaveRequests.filter(r => r.durationType === 'Half Day');
-
   // Export handlers
   const handleExportCurrentReport = () => {
     if (activeReportTab === 'employee') {
       exportToCSV('Employee_Leave_Report', employeeReportData);
     } else if (activeReportTab === 'area') {
       exportToCSV('Area_wise_Leave_Report', areaReportData);
-    } else if (activeReportTab === 'halfDay') {
-      exportToCSV(
-        'Half_Day_Leave_Report',
-        halfDayRequests.map(r => ({
-          ID: r.id,
-          Employee: r.employeeName,
-          Date: r.startDate,
-          Session: r.halfDaySession,
-          Deduction: r.deductibleDays,
-          Status: r.status,
-          Reason: r.reason
-        }))
-      );
+    } else if (activeReportTab === 'carryForward') {
+      exportToCSV('Carry_Forward_Report', employees.map(e => {
+        const bal = leaveBalances[e.id];
+        return {
+          Name: e.name,
+          CarriedForward: bal ? bal.carryForwardAllocation : 0,
+          Consumed: bal ? bal.carryForwardTaken : 0,
+          Remaining: bal ? bal.carryForwardAllocation - bal.carryForwardTaken : 0
+        };
+      }));
     } else {
       exportToCSV('Leave_Utilization_Report', employeeReportData);
     }
@@ -114,7 +108,7 @@ export const LeaveReportsPage: React.FC = () => {
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Analytics & Leave Reports</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Aggregated workforce intelligence: employee balances, departmental trends, carry-forward utilization & half-day analyses.
+            Aggregated workforce intelligence: employee balances, departmental trends, and carry-forward utilization.
           </p>
         </div>
 
@@ -133,8 +127,7 @@ export const LeaveReportsPage: React.FC = () => {
           { id: 'employee', label: 'Employee-wise Report' },
           { id: 'area', label: 'Area-wise Report' },
           { id: 'utilization', label: 'Leave Utilization Report' },
-          { id: 'carryForward', label: 'Carry-Forward Report' },
-          { id: 'halfDay', label: 'Half-Day Leave Report' }
+          { id: 'carryForward', label: 'Carry-Forward Report' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -223,44 +216,6 @@ export const LeaveReportsPage: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Report 3: Half-Day Leave Report */}
-      {activeReportTab === 'halfDay' && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden">
-          <div className="p-5 border-b border-gray-100">
-            <h3 className="text-base font-bold text-gray-900">Half-Day Leave Submissions</h3>
-            <p className="text-xs text-gray-400">0.5 day deductions, morning vs afternoon sessions</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50/70 text-gray-600 font-semibold uppercase tracking-wider text-[11px] border-b border-gray-100">
-                <tr>
-                  <th className="px-5 py-3.5">ID</th>
-                  <th className="px-5 py-3.5">Employee</th>
-                  <th className="px-5 py-3.5">Date</th>
-                  <th className="px-5 py-3.5">Session</th>
-                  <th className="px-5 py-3.5 text-center">Deduction</th>
-                  <th className="px-5 py-3.5">Reason</th>
-                  <th className="px-5 py-3.5">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-gray-700">
-                {halfDayRequests.map(r => (
-                  <tr key={r.id}>
-                    <td className="px-5 py-3.5 font-mono font-bold text-gray-900">{r.id}</td>
-                    <td className="px-5 py-3.5 font-semibold text-gray-900">{r.employeeName}</td>
-                    <td className="px-5 py-3.5">{r.startDate}</td>
-                    <td className="px-5 py-3.5 font-semibold text-indigo-700">{r.halfDaySession || 'Morning'}</td>
-                    <td className="px-5 py-3.5 text-center font-bold text-blue-600">0.5 day</td>
-                    <td className="px-5 py-3.5 text-gray-500">{r.reason}</td>
-                    <td className="px-5 py-3.5 font-semibold">{r.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/auth/LoginPage';
+import { RegisterPage } from '../pages/auth/RegisterPage';
 import { ProtectedRoute } from './ProtectedRoute';
 
 // Admin Pages & Layout
@@ -27,6 +28,7 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       {/* Admin Panel Routes */}
       <Route

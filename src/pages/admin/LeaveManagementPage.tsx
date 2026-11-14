@@ -138,13 +138,8 @@ export const LeaveManagementPage: React.FC = () => {
                   </td>
                   <td className="px-5 py-4">
                     <span className="font-medium text-gray-900">{req.leaveType}</span>
-                    {req.halfDaySession && (
-                      <span className="text-[10px] text-indigo-600 block">
-                        ({req.halfDaySession} Half-Day)
-                      </span>
-                    )}
                   </td>
-                  <td className="px-5 py-4 font-medium">{req.durationType}</td>
+                  <td className="px-5 py-4 font-medium">{req.durationType || 'Full Day'}</td>
                   <td className="px-5 py-4 text-center font-semibold text-gray-700">{req.calendarDays}d</td>
                   <td className="px-5 py-4 text-center">
                     <span className="font-bold text-blue-700 text-sm">{req.deductibleDays}d</span>
