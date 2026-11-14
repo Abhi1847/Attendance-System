@@ -170,6 +170,7 @@ export const LeaveReportsPage: React.FC = () => {
                 <thead className="bg-gray-50/70 text-gray-600 font-semibold uppercase tracking-wider text-[11px] border-b border-gray-100">
                   <tr>
                     <th className="px-5 py-3.5">Employee</th>
+                    <th className="px-5 py-3.5">LLC Name</th>
                     <th className="px-5 py-3.5 text-center">Annual Allocation</th>
                     <th className="px-5 py-3.5 text-center">Carry-Forward</th>
                     <th className="px-5 py-3.5 text-center">Taken</th>
@@ -181,6 +182,7 @@ export const LeaveReportsPage: React.FC = () => {
                   {employeeReportData.map(r => (
                     <tr key={r.name} className="hover:bg-gray-50/50">
                       <td className="px-5 py-3.5 font-bold text-gray-900">{r.name}</td>
+                      <td className="px-5 py-3.5 font-medium text-gray-600">{r.llcName}</td>
                       <td className="px-5 py-3.5 text-center font-medium">{r.annualAllocation}d</td>
                       <td className="px-5 py-3.5 text-center text-blue-700 font-semibold">{r.carryForward}d</td>
                       <td className="px-5 py-3.5 text-center font-bold text-blue-600">{r.taken}d</td>
