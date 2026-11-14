@@ -240,7 +240,7 @@ export const AdminDocumentsPage: React.FC = () => {
                   >
                     {employees.map(emp => (
                       <option key={emp.id} value={emp.id}>
-                        {emp.name} ({emp.id} - {emp.department})
+                        {emp.name} ({emp.id} - {emp.llcName || 'Active'})
                       </option>
                     ))}
                   </select>

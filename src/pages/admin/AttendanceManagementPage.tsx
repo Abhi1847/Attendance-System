@@ -24,34 +24,40 @@ export const AttendanceManagementPage: React.FC = () => {
 
   const [searchEmployee, setSearchEmployee] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
-  const [selectedDept, setSelectedDept] = useState<string>('All');
+  const [selectedLlc, setSelectedLlc] = useState<string>('All');
   const [selectedDate, setSelectedDate] = useState<string>('');
 
-  const departments = ['All', ...Array.from(new Set(employees.map(e => e.department)))];
+  const llcList = ['All', ...Array.from(new Set(employees.map(e => e.llcName || 'Acme Solutions LLC')))];
 
   const filteredAttendance = attendance.filter(record => {
+    const matchedEmp = employees.find(e => e.id === record.employeeId);
+    const empLlc = matchedEmp?.llcName || 'Acme Solutions LLC';
+
     const matchesEmp =
       record.employeeName.toLowerCase().includes(searchEmployee.toLowerCase()) ||
       record.employeeId.toLowerCase().includes(searchEmployee.toLowerCase());
     const matchesStatus = selectedStatus === 'All' || record.status === selectedStatus;
-    const matchesDept = selectedDept === 'All' || record.department === selectedDept;
+    const matchesLlc = selectedLlc === 'All' || empLlc === selectedLlc;
     const matchesDate = !selectedDate || record.date === selectedDate;
-    return matchesEmp && matchesStatus && matchesDept && matchesDate;
+    return matchesEmp && matchesStatus && matchesLlc && matchesDate;
   });
 
   const handleExportCSV = () => {
-    const rows = filteredAttendance.map(r => ({
-      ID: r.id,
-      EmployeeID: r.employeeId,
-      EmployeeName: r.employeeName,
-      Department: r.department,
-      Date: r.date,
-      CheckIn: r.checkIn || 'N/A',
-      CheckOut: r.checkOut || 'N/A',
-      WorkingHours: r.workingHours || 'N/A',
-      Status: r.status,
-      Notes: r.notes || ''
-    }));
+    const rows = filteredAttendance.map(r => {
+      const matchedEmp = employees.find(e => e.id === r.employeeId);
+      return {
+        ID: r.id,
+        EmployeeID: r.employeeId,
+        EmployeeName: r.employeeName,
+        LLC: matchedEmp?.llcName || 'Acme Solutions LLC',
+        Date: r.date,
+        CheckIn: r.checkIn || 'N/A',
+        CheckOut: r.checkOut || 'N/A',
+        WorkingHours: r.workingHours || 'N/A',
+        Status: r.status,
+        Notes: r.notes || ''
+      };
+    });
     exportToCSV('Attendance_Records', rows);
     success('Attendance records exported successfully.');
   };
@@ -64,7 +70,7 @@ export const AttendanceManagementPage: React.FC = () => {
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Enterprise Attendance</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Monitor daily check-ins, punctuality, approved on-leave statuses, and work hours across all departments.
+            Monitor daily check-ins, punctuality, approved on-leave statuses, and work hours.
           </p>
         </div>
 
@@ -92,16 +98,18 @@ export const AttendanceManagementPage: React.FC = () => {
 
         <div>
           <select
-            value={selectedDept}
-            onChange={e => setSelectedDept(e.target.value)}
+            value={selectedLlc}
+            onChange={e => setSelectedLlc(e.target.value)}
             className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 bg-gray-50/50 font-medium focus:outline-none focus:border-blue-600"
           >
-            <option value="All">All Departments</option>
-            {departments.filter(d => d !== 'All').map(d => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
+              <option value="All">All LLCs</option>
+            {
+                llcList.filter(d => d !== 'All').map(d => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))
+              }
           </select>
         </div>
 
@@ -136,7 +144,7 @@ export const AttendanceManagementPage: React.FC = () => {
             <thead className="bg-gray-50/70 text-gray-600 font-semibold uppercase tracking-wider text-[11px] border-b border-gray-100">
               <tr>
                 <th className="px-5 py-3.5">Employee</th>
-                <th className="px-5 py-3.5">Department</th>
+                <th className="px-5 py-3.5">LLC Name</th>
                 <th className="px-5 py-3.5">Date</th>
                 <th className="px-5 py-3.5">Check-In</th>
                 <th className="px-5 py-3.5">Check-Out</th>
@@ -146,29 +154,33 @@ export const AttendanceManagementPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-700">
-              {filteredAttendance.map(item => (
-                <tr key={item.id} className="hover:bg-gray-50/50 transition">
-                  <td className="px-5 py-4 font-semibold text-gray-900">
-                    <div>
-                      <span>{item.employeeName}</span>
-                      <span className="block text-[10px] text-gray-400 font-mono font-normal">
-                        {item.employeeId}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 font-medium">{item.department}</td>
-                  <td className="px-5 py-4 text-gray-600">{formatDate(item.date)}</td>
-                  <td className="px-5 py-4 font-medium text-gray-900">{item.checkIn || '—'}</td>
-                  <td className="px-5 py-4 font-medium text-gray-900">{item.checkOut || '—'}</td>
-                  <td className="px-5 py-4 text-gray-600">{item.workingHours || '—'}</td>
-                  <td className="px-5 py-4">
-                    <StatusBadge status={item.status} />
-                  </td>
-                  <td className="px-5 py-4 text-gray-400 max-w-xs truncate">
-                    {item.notes || '—'}
-                  </td>
-                </tr>
-              ))}
+                {
+                  filteredAttendance.map(item => {
+                    const matchedEmp = employees.find(e => e.id === item.employeeId);
+                    return (
+                      <tr key={item.id} className="hover:bg-gray-50/50 transition">
+                        <td className="px-5 py-4 font-semibold text-gray-900">
+                          <div>
+                            <span>{item.employeeName}</span>
+                            <span className="block text-[10px] text-gray-400 font-mono font-normal">
+                              {item.employeeId}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 font-medium text-gray-600">{matchedEmp?.llcName || 'Acme Solutions LLC'}</td>
+                        <td className="px-5 py-4 text-gray-600">{formatDate(item.date)}</td>
+                        <td className="px-5 py-4 font-medium text-gray-900">{item.checkIn || '—'}</td>
+                        <td className="px-5 py-4 font-medium text-gray-900">{item.checkOut || '—'}</td>
+                        <td className="px-5 py-4 text-gray-600">{item.workingHours || '—'}</td>
+                        <td className="px-5 py-4">
+                          <StatusBadge status={item.status} />
+                        </td>
+                        <td className="px-5 py-4 text-gray-400 max-w-xs truncate">
+                          {item.notes || '—'}
+                        </td>
+                      </tr>
+              );
+              })}
               {filteredAttendance.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-6 py-10 text-center text-gray-400">

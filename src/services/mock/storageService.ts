@@ -617,17 +617,7 @@ export const InvitationService = {
 // 9. PasswordRequestService
 export const PasswordRequestService = {
   getRequests: (): PasswordChangeRequest[] => {
-    return loadFromStorage<PasswordChangeRequest[]>(KEYS.PASSWORD_REQUESTS, [
-      {
-        id: 'PR-101',
-        employeeId: 'EMP002',
-        employeeName: 'Sarah Johnson',
-        email: 'employee@demo.com',
-        reason: 'Routine quarterly password refresh',
-        status: 'Pending',
-        requestedAt: '2026-11-13'
-      }
-    ]);
+    return loadFromStorage<PasswordChangeRequest[]>(KEYS.PASSWORD_REQUESTS, []);
   },
 
   createRequest: (employeeId: string, employeeName: string, email: string, reason?: string): PasswordChangeRequest => {

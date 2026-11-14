@@ -75,7 +75,7 @@ export const EmployeeProfilePage: React.FC = () => {
             <div>
               <h2 className="text-2xl font-extrabold text-gray-900">{user?.name}</h2>
               <p className="text-sm text-gray-500 font-medium">
-                {user?.designation || 'Lead UI/UX Designer'} • {user?.department || 'Product Design'}
+                {llcName} • {jobLocation}
               </p>
             </div>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">

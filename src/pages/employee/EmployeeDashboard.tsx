@@ -56,7 +56,7 @@ export const EmployeeDashboard: React.FC = () => {
             Welcome back, {user?.name || 'Sarah Johnson'}!
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-            Department: <span className="font-semibold text-white">{user?.department || 'Product Design'}</span> • Employee ID: <span className="font-mono text-blue-300">{employeeId}</span>
+            Employee ID: <span className="font-mono text-blue-300">{employeeId}</span>
           </p>
           <div className="mt-3 flex items-center space-x-3 text-xs text-slate-400">
             <span>Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>

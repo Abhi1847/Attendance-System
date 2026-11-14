@@ -127,7 +127,7 @@ export const EmployeeLayout: React.FC = () => {
             <div className="truncate flex-1">
               <p className="text-xs font-semibold text-white truncate">{user?.name}</p>
               <p className="text-[11px] text-emerald-400 truncate">
-                {user?.designation || 'Staff Member'}
+                Active Employee
               </p>
             </div>
           </div>
@@ -142,71 +142,71 @@ export const EmployeeLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-y-auto">
-          {/* Top Navbar */}
-            <header className="h-16 bg-white border-b border-gray-100 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs shrink-0">
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-                >
-                  <Menu className="w-5 h-5" />
-                </button>
-                <h1 className="text-lg font-bold text-gray-900 hidden sm:block">{getPageTitle()}</h1>
-              </div>
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-y-auto">
+        {/* Top Navbar */}
+        <header className="h-16 bg-white border-b border-gray-100 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-xs shrink-0">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-lg font-bold text-gray-900 hidden sm:block">{getPageTitle()}</h1>
+          </div>
 
-              <div className="flex items-center space-x-3">
-                <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Status: Active Duty</span>
-                </div>
-
-                {/* Profile Dropdown */}
-                <div className="relative">
-                  <button
-                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                    className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-100 transition"
-                  >
-                    <img
-                      src={user?.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
-                      alt="Avatar"
-                      className="w-8 h-8 rounded-xl object-cover border border-gray-200"
-                    />
-                    <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
-                  </button>
-
-                  {profileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-xs font-bold text-gray-900">{user?.name}</p>
-                        <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
-                      </div>
-                      <NavLink
-                        to="/employee/profile"
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center space-x-2 px-4 py-2 text-xs text-gray-700 hover:bg-gray-50"
-                      >
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span>My Profile</span>
-                      </NavLink>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center space-x-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 text-left"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </header>
-
-            {/* Dynamic Page Content */}
-              <main className="p-4 sm:p-8 flex-1 flex flex-col">
-                <Outlet />
-              </main>
+          <div className="flex items-center space-x-3">
+            <div className="hidden sm:flex items-center space-x-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Status: Active Duty</span>
             </div>
-        </div>
-        );
+
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-100 transition"
+              >
+                <img
+                  src={user?.avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'}
+                  alt="Avatar"
+                  className="w-8 h-8 rounded-xl object-cover border border-gray-200"
+                />
+                <ChevronDown className="w-3.5 h-3.5 text-gray-500" />
+              </button>
+
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-xs font-bold text-gray-900">{user?.name}</p>
+                    <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
+                  </div>
+                  <NavLink
+                    to="/employee/profile"
+                    onClick={() => setProfileDropdownOpen(false)}
+                    className="flex items-center space-x-2 px-4 py-2 text-xs text-gray-700 hover:bg-gray-50"
+                  >
+                    <User className="w-4 h-4 text-gray-400" />
+                    <span>My Profile</span>
+                  </NavLink>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic Page Content */}
+        <main className="p-4 sm:p-8 flex-1 flex flex-col">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
 };

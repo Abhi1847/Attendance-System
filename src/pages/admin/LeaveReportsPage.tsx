@@ -44,7 +44,7 @@ export const LeaveReportsPage: React.FC = () => {
     const bal = leaveBalances[emp.id];
     return {
       name: emp.name,
-      department: emp.department,
+      llcName: emp.llcName || 'Acme Solutions LLC',
       area: emp.area || 'West Coast',
       annualAllocation: bal ? bal.annualAllocation : 14,
       carryForward: bal ? bal.carryForwardAllocation : 0,
@@ -108,7 +108,7 @@ export const LeaveReportsPage: React.FC = () => {
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Analytics & Leave Reports</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Aggregated workforce intelligence: employee balances, departmental trends, and carry-forward utilization.
+            Aggregated workforce intelligence: employee balances, area-wise trends, and carry-forward utilization.
           </p>
         </div>
 
@@ -170,7 +170,6 @@ export const LeaveReportsPage: React.FC = () => {
                 <thead className="bg-gray-50/70 text-gray-600 font-semibold uppercase tracking-wider text-[11px] border-b border-gray-100">
                   <tr>
                     <th className="px-5 py-3.5">Employee</th>
-                    <th className="px-5 py-3.5">Department</th>
                     <th className="px-5 py-3.5 text-center">Annual Allocation</th>
                     <th className="px-5 py-3.5 text-center">Carry-Forward</th>
                     <th className="px-5 py-3.5 text-center">Taken</th>
@@ -182,7 +181,6 @@ export const LeaveReportsPage: React.FC = () => {
                   {employeeReportData.map(r => (
                     <tr key={r.name} className="hover:bg-gray-50/50">
                       <td className="px-5 py-3.5 font-bold text-gray-900">{r.name}</td>
-                      <td className="px-5 py-3.5 text-gray-500">{r.department}</td>
                       <td className="px-5 py-3.5 text-center font-medium">{r.annualAllocation}d</td>
                       <td className="px-5 py-3.5 text-center text-blue-700 font-semibold">{r.carryForward}d</td>
                       <td className="px-5 py-3.5 text-center font-bold text-blue-600">{r.taken}d</td>

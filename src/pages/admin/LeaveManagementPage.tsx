@@ -32,8 +32,7 @@ export const LeaveManagementPage: React.FC = () => {
     const matchesStatus = filterStatus === 'All' || req.status === filterStatus;
     const matchesSearch =
       req.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      req.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      req.department.toLowerCase().includes(searchTerm.toLowerCase());
+    req.id.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -81,7 +80,7 @@ export const LeaveManagementPage: React.FC = () => {
           <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by employee, department, ID..."
+            placeholder="Search by employee, ID..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:border-blue-600 bg-gray-50/50"
@@ -95,11 +94,10 @@ export const LeaveManagementPage: React.FC = () => {
               <button
                 key={st}
                 onClick={() => setFilterStatus(st)}
-                className={`px-3 py-1.5 rounded-lg transition ${
-                  filterStatus === st
-                    ? 'bg-white text-blue-700 shadow-xs'
-                    : 'text-gray-500 hover:text-gray-900'
-                }`}
+                className={`px-3 py-1.5 rounded-lg transition ${filterStatus === st
+                  ? 'bg-white text-blue-700 shadow-xs'
+                  : 'text-gray-500 hover:text-gray-900'
+                  }`}
               >
                 {st}
               </button>
@@ -133,7 +131,6 @@ export const LeaveManagementPage: React.FC = () => {
                   <td className="px-5 py-4 font-semibold text-gray-900">
                     <div>
                       <span>{req.employeeName}</span>
-                      <span className="block text-[10px] text-gray-400 font-normal">{req.department}</span>
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -240,7 +237,6 @@ export const LeaveManagementPage: React.FC = () => {
                   <div className="p-2.5 bg-gray-50 rounded-xl">
                     <span className="text-gray-400 uppercase text-[10px] font-semibold block">Employee</span>
                     <span className="font-bold text-gray-900">{selectedRequest.employeeName}</span>
-                    <span className="block text-[10px] text-gray-400">{selectedRequest.department}</span>
                   </div>
                   <div className="p-2.5 bg-gray-50 rounded-xl">
                     <span className="text-gray-400 uppercase text-[10px] font-semibold block">Leave Type</span>

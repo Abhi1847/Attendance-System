@@ -48,7 +48,7 @@ export const EmployeeManagementPage: React.FC = () => {
 
   const [topTab, setTopTab] = useState<'employees' | 'invitations' | 'passwords'>('employees');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDept, setSelectedDept] = useState('All');
+  const [selectedLlc, setSelectedLlc] = useState('All');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'balance' | 'history' | 'documents'>('overview');
 
@@ -66,15 +66,16 @@ export const EmployeeManagementPage: React.FC = () => {
   const [selectedPwdReqId, setSelectedPwdReqId] = useState<string | null>(null);
   const [tempPassword, setTempPassword] = useState('Welcome@123');
 
-  const departments = ['All', ...Array.from(new Set(employees.map(e => e.department)))];
+  const llcList = ['All', ...Array.from(new Set(employees.map(e => e.llcName || 'Acme Solutions LLC')))];
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch =
       emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDept = selectedDept === 'All' || emp.department === selectedDept;
-    return matchesSearch && matchesDept;
+    const empLlc = emp.llcName || 'Acme Solutions LLC';
+    const matchesLlc = selectedLlc === 'All' || empLlc === selectedLlc;
+    return matchesSearch && matchesLlc;
   });
 
   const handleExportCSV = () => {
@@ -202,21 +203,19 @@ export const EmployeeManagementPage: React.FC = () => {
       <div className="flex items-center space-x-2 border-b border-gray-200">
         <button
           onClick={() => setTopTab('employees')}
-          className={`pb-3 px-3 text-xs font-bold transition-all relative ${
-            topTab === 'employees'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-900'
-          }`}
+          className={`pb-3 px-3 text-xs font-bold transition-all relative ${topTab === 'employees'
+            ? 'text-blue-600 border-b-2 border-blue-600'
+            : 'text-gray-500 hover:text-gray-900'
+            }`}
         >
           Active Directory ({employees.length})
         </button>
         <button
           onClick={() => setTopTab('invitations')}
-          className={`pb-3 px-3 text-xs font-bold transition-all relative flex items-center space-x-1.5 ${
-            topTab === 'invitations'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-900'
-          }`}
+          className={`pb-3 px-3 text-xs font-bold transition-all relative flex items-center space-x-1.5 ${topTab === 'invitations'
+            ? 'text-blue-600 border-b-2 border-blue-600'
+            : 'text-gray-500 hover:text-gray-900'
+            }`}
         >
           <span>Invitations & Onboarding</span>
           {pendingInvCount > 0 && (
@@ -227,11 +226,10 @@ export const EmployeeManagementPage: React.FC = () => {
         </button>
         <button
           onClick={() => setTopTab('passwords')}
-          className={`pb-3 px-3 text-xs font-bold transition-all relative flex items-center space-x-1.5 ${
-            topTab === 'passwords'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-900'
-          }`}
+          className={`pb-3 px-3 text-xs font-bold transition-all relative flex items-center space-x-1.5 ${topTab === 'passwords'
+            ? 'text-blue-600 border-b-2 border-blue-600'
+            : 'text-gray-500 hover:text-gray-900'
+            }`}
         >
           <span>Password Change Requests</span>
           {pendingPwdCount > 0 && (
@@ -258,20 +256,7 @@ export const EmployeeManagementPage: React.FC = () => {
               />
             </div>
 
-            <div className="flex items-center space-x-2 w-full md:w-auto">
-              <span className="text-xs text-gray-500 font-medium">Department:</span>
-              <select
-                value={selectedDept}
-                onChange={e => setSelectedDept(e.target.value)}
-                className="px-3 py-2 rounded-xl text-xs border border-gray-200 bg-gray-50/50 font-medium focus:outline-none focus:border-blue-600"
-              >
-                {departments.map(d => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </div>
+
           </div>
 
           {/* Employees Table */}
@@ -394,11 +379,10 @@ export const EmployeeManagementPage: React.FC = () => {
                       <td className="px-5 py-4 text-gray-500">{inv.invitedAt}</td>
                       <td className="px-5 py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            inv.status === 'Registered'
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${inv.status === 'Registered'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}
                         >
                           {inv.status === 'Registered' ? 'Registered' : 'Invite Sent (Pending)'}
                         </span>
@@ -466,13 +450,12 @@ export const EmployeeManagementPage: React.FC = () => {
                     <td className="px-5 py-4 text-gray-500">{req.requestedAt}</td>
                     <td className="px-5 py-4 text-center">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          req.status === 'Approved'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : req.status === 'Rejected'
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${req.status === 'Approved'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : req.status === 'Rejected'
                             ? 'bg-rose-50 text-rose-700 border border-rose-200'
                             : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}
+                          }`}
                       >
                         {req.status}
                       </span>
@@ -544,7 +527,7 @@ export const EmployeeManagementPage: React.FC = () => {
                       <StatusBadge status={selectedEmployee.status} />
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {selectedEmployee.designation} • {selectedEmployee.department}
+                      {selectedEmployee.llcName || 'Acme Solutions LLC'} • {selectedEmployee.jobLocation || 'California, US'}
                     </p>
                     <p className="text-[11px] text-gray-400 font-mono mt-0.5">
                       ID: {selectedEmployee.id} | Joined: {selectedEmployee.joiningDate}
@@ -566,11 +549,10 @@ export const EmployeeManagementPage: React.FC = () => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-3 py-1.5 rounded-lg capitalize transition ${
-                      activeTab === tab
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg capitalize transition ${activeTab === tab
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                      }`}
                   >
                     {tab}
                   </button>

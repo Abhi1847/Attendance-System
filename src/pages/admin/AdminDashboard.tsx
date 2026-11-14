@@ -165,14 +165,6 @@ export const AdminDashboard: React.FC = () => {
           trend={{ value: '3.2%', isPositive: true }}
         />
         <StatCard
-          title="Absent Today"
-          value={absentToday}
-          subtitle="Unnotified"
-          icon={UserX}
-          iconColor="text-rose-600"
-          iconBg="bg-rose-50"
-        />
-        <StatCard
           title="On Leave Today"
           value={onLeaveToday}
           subtitle="Approved leaves"
@@ -287,7 +279,6 @@ export const AdminDashboard: React.FC = () => {
                       </div>
                       <div>
                         <span>{req.employeeName}</span>
-                        <span className="block text-[10px] text-gray-400 font-normal">{req.department}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">{req.leaveType}</td>

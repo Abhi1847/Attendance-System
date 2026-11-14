@@ -30,8 +30,7 @@ export const LeaveHistoryPage: React.FC = () => {
   const filteredHistory = leaveRequests.filter(r => {
     const matchesSearch =
       r.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.department.toLowerCase().includes(searchTerm.toLowerCase());
+    r.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = selectedType === 'All' || r.leaveType === selectedType;
     const matchesStatus = selectedStatus === 'All' || r.status === selectedStatus;
     return matchesSearch && matchesType && matchesStatus;
@@ -41,7 +40,6 @@ export const LeaveHistoryPage: React.FC = () => {
     const rows = filteredHistory.map(r => ({
       RequestID: r.id,
       Employee: r.employeeName,
-      Department: r.department,
       LeaveType: r.leaveType,
       StartDate: r.startDate,
       EndDate: r.endDate,
@@ -86,7 +84,7 @@ export const LeaveHistoryPage: React.FC = () => {
           <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search employee, ID, department..."
+            placeholder="Search employee, ID"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:border-blue-600 bg-gray-50/50"
@@ -146,7 +144,6 @@ export const LeaveHistoryPage: React.FC = () => {
                   <td className="px-5 py-4 font-semibold text-gray-900">
                     <div>
                       <span>{req.employeeName}</span>
-                      <span className="block text-[10px] text-gray-400 font-normal">{req.department}</span>
                     </div>
                   </td>
                   <td className="px-5 py-4">
