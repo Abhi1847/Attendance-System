@@ -20,40 +20,17 @@ export const AdminSettingsPage: React.FC = () => {
   const { success } = useToast();
 
   const [annualAllocation, setAnnualAllocation] = useState(settings.annualLeaveAllocation);
-  const [weeklyOffDays, setWeeklyOffDays] = useState<number[]>(settings.weeklyOffDays);
   const [carryForwardEnabled, setCarryForwardEnabled] = useState(settings.carryForwardEnabled);
   const [carryForwardExpiry, setCarryForwardExpiry] = useState(settings.carryForwardExpiry);
   const [requireLeaveReason, setRequireLeaveReason] = useState(settings.requireLeaveReason);
 
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
 
-  const daysOfWeek = [
-    { day: 0, label: 'Sunday' },
-    { day: 1, label: 'Monday' },
-    { day: 2, label: 'Tuesday' },
-    { day: 3, label: 'Wednesday' },
-    { day: 4, label: 'Thursday' },
-    { day: 5, label: 'Friday' },
-    { day: 6, label: 'Saturday' }
-  ];
-
-  const toggleWeeklyOff = (day: number) => {
-    if (weeklyOffDays.includes(day)) {
-      if (weeklyOffDays.length === 1) {
-        return; // at least 1 day off
-      }
-      setWeeklyOffDays(weeklyOffDays.filter(d => d !== day));
-    } else {
-      setWeeklyOffDays([...weeklyOffDays, day]);
-    }
-  };
-
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings({
       ...settings,
       annualLeaveAllocation: Number(annualAllocation),
-      weeklyOffDays,
       carryForwardEnabled,
       carryForwardExpiry,
       requireLeaveReason
@@ -66,7 +43,6 @@ export const AdminSettingsPage: React.FC = () => {
     setConfirmResetOpen(false);
     success('Demo dataset successfully restored to original mock baseline.');
     setAnnualAllocation(14);
-    setWeeklyOffDays([0]);
     setCarryForwardEnabled(true);
     setCarryForwardExpiry('None');
     setRequireLeaveReason(true);
@@ -80,7 +56,7 @@ export const AdminSettingsPage: React.FC = () => {
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">System & Leave Policies</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Configure global annual leave allocations, weekly off schedule, carry-forward behavior, and demo reset.
+            Configure global annual leave allocations, carry-forward behavior, and demo reset.
           </p>
         </div>
 
@@ -99,7 +75,7 @@ export const AdminSettingsPage: React.FC = () => {
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs space-y-6">
           <div className="flex items-center space-x-2 border-b border-gray-100 pb-3">
             <Calendar className="w-5 h-5 text-blue-600" />
-            <h3 className="text-base font-bold text-gray-900">Annual Leave & Working Schedule</h3>
+            <h3 className="text-base font-bold text-gray-900">Annual Leave Policy</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -138,38 +114,6 @@ export const AdminSettingsPage: React.FC = () => {
                 Carry-forward remains protected and consumed only after current-year reaches 0.
               </p>
             </div>
-          </div>
-
-          {/* Weekly Off Days Selection */}
-          <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-2">
-              Configured Weekly Off Days (Excluded from Leave Deductions)
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
-              {daysOfWeek.map(item => {
-                const isSelected = weeklyOffDays.includes(item.day);
-                return (
-                  <button
-                    key={item.day}
-                    type="button"
-                    onClick={() => toggleWeeklyOff(item.day)}
-                    className={`py-3 px-2 rounded-xl text-xs font-bold border transition text-center ${
-                      isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                        : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <span className="block text-[10px] opacity-80 font-normal">
-                      {isSelected ? 'Weekly Off' : 'Working Day'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[11px] text-gray-400 mt-2">
-              Default is Sunday (0). Saturday is treated as a working day by default. Any day marked as Weekly Off will NOT consume leave quota when calculating leave deductions.
-            </p>
           </div>
         </div>
 
